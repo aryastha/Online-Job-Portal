@@ -10,22 +10,21 @@ const companySchema = new mongoose.Schema({
     },
     website:{
         type: String,
-        required: true,
-        unique: true
+        unique: true,
+        sparse: true //null is allowed
     },
     location: {
         type: String,
-        required: true
+
     },
     logo:{
         type: String,//url for logo
-        required: true
     },
     userId:[
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
-            required: true
+           
         }
     ],
 },{

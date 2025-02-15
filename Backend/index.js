@@ -4,7 +4,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './utils/db.js';
 import userRoute from './routes/user.routes.js';
-
+import companyRoute from './routes/company.routes.js';
+import jobRoute from './routes/job.routes.js'
 
 dotenv.config({});
 
@@ -28,10 +29,8 @@ app.use(cors(corsOption));
 // app.use('./profile/update', userRoute.updateProfile);
 
 app.use("/api/user", userRoute);
-
-
-
-
+app.use("/api/company", companyRoute);
+app.use("/api/job", jobRoute);
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT,()=>{
