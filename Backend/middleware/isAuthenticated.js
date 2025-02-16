@@ -24,7 +24,7 @@ const authenticateToken = (req, res, next) =>{
         next();
 
     }catch(error){
-        res.status(401).json({message: "Error"});
+        res.status(401).json({message: "Invalid Token Server Error"});
     }
 }
 
