@@ -59,14 +59,10 @@ export const getAllCompanies = async(req, res)=>{
                 success: false,
             });
         }
-
         return res.json({
-            message: "These are the compnaies.",
-            success: true,
             companies,
+            success: true,
         });
-
-       
     }catch(error){
         console.error(error);
         res.status(500).json({

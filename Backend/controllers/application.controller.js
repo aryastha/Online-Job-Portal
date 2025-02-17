@@ -10,11 +10,13 @@ export const applyJob = async (req, res) => {
         .status(400)
         .json({ message: "Invalid job id", success: false });
     }
+    console.log(jobId);
     // check if the user already has applied for this job
     const existingApplication = await Application.findOne({
       job: jobId,
       applicant: userId,
     });
+
     if (existingApplication) {
       return res.status(400).json({
         message: "You have already applied for this job",
@@ -23,25 +25,23 @@ export const applyJob = async (req, res) => {
     }
     //check if the job exists or not
     const job = await Job.findById(jobId);
+
+
+    console.log(job);
     if (!job) {
       return res.status(404).json({ message: "Job not found", success: false });
     }
-    
-    // Check if the user is the recruiter who created the job
-
-    if (job.created_by.toString() === userId) {
-        return res.status(400).json({
-          message: "Recruiters cannot apply for their own jobs",
-          success: false,
-        });
-      }
-    
     // create a new application
 
     const newApplication = await Application.create({
       job: jobId,
       applicant: userId,
     });
+
+    if (!job.applications) {
+      job.applications = []; // Initialize as an empty array if it's null
+    }
+    
     job.applications.push(newApplication._id);
     await job.save();
 
