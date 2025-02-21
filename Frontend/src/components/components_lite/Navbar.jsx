@@ -11,7 +11,7 @@ const Navbar = () => {
 
 
   return (
-    <div className="bg-[#ECF0F1] h-screen">
+    <div className="bg-[#ECF0F1]">
         {/* //right logo */}
       <div className='flex items-center justify-between mx-auto max-w-7xl h-18'>
       <div>
@@ -31,8 +31,12 @@ const Navbar = () => {
             {
               !user?(
                 <div className='flex items-center gap-2'>
+                  <Link to={'/signup'}>              
+                   <Button className='bg-[#F39C12] hover:bg-[#d98c0f]'> Signup </Button>
+                  </Link>
+                  <Link to ={'/login'}>
                   <Button variant='outline'> Login </Button>
-                  <Button className='bg-[#F39C12] hover:bg-[#d98c0f]'> Signup </Button>
+                  </Link>
                 </div>                
               ) : (
                 <Popover>
