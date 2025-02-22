@@ -20,7 +20,13 @@ const Login = () => {
   
   const submitHandler = (e) =>{
     e.preventDefault();
-    console.log(input);
+    try{
+      const 
+
+    }catch(error){
+      console.error(error);
+      alert("Something went wrong. Please try again later.");
+    }
   }
 
   return (

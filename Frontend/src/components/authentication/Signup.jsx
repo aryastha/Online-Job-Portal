@@ -5,7 +5,8 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { RadioGroup } from "../ui/radio-group";
 import { Link } from "react-router-dom";
-
+import {USER_API_ENDPOINT} from '../utils/data'
+import axios from 'axios';
 const Signup = () => {
 
     const [input, setInput] = useState({
@@ -21,25 +22,44 @@ const Signup = () => {
       setInput({...input, [e.target.name] : e.target.value});
     }
 
-    const ChangeFilehandler = (e) =>{
-      setInput({...input, file: e.target.files?.[0]});
-    }
-
-    const submitHandler = async(e) =>{
+    const ChangeFilehandler = (e) => {
+      setInput({ ...input, file: e.target.files?.[0] });
+    };
+    
+    const submitHandler = async (e) => {
       e.preventDefault();
-      console.log(input);
-    }
-    //   const formData = new formData();
-    //   formData.append('fullname', input.fullname);
-    //   formData.append('email', input.email);
-    //   formData.append('password', input.password);
-    //   formData.append('role', input.role);
-    //   formData.append('phoneNumber', input.phoneNumber); 
-    //   if (input.file){
-    //     formData.append('file', input.file);
-    //   }
-    // }
-
+      dispatch(setLoading(true)); // Optional: if you want to show loading before request
+    
+      const formData = new FormData(); // Correct case: FormData
+      formData.append('fullname', input.fullname);
+      formData.append('email', input.email);
+      formData.append('password', input.password);
+      formData.append('role', input.role);
+      formData.append('phoneNumber', input.phoneNumber);
+      if (input.file) {
+        formData.append('file', input.file);
+      }
+    
+      try {
+        const res = await axios.post(`${USER_API_ENDPOINT}/signup`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+        });
+        if (res.data.success) {
+          navigate("/login");
+          toast.success(res.data.message);
+        }
+      } catch (error) {
+        console.log(error);
+        const errorMessage = error.response
+          ? error.response.data.message
+          : "An unexpected error occurred.";
+        toast.error(errorMessage);
+      } finally {
+        dispatch(setLoading(false));
+      }
+    };
+    
 
   return (
     <div className="bg-[#ECF0F1] min-h-screen">
