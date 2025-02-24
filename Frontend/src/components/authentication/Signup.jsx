@@ -54,7 +54,7 @@ const register = () => {
           toast.success(res.data.message);
         }
       } catch (error) {
-        console.log(error);
+        console.error(error);
         const errorMessage = error.response
           ? error.response.data.message
           : "An unexpected error occurred.";

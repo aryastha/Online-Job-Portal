@@ -27,6 +27,14 @@ export const register = async(req,res) =>{
             })
         }
 
+        const file = req.file;
+        if (!file) {
+          return res.status(400).json({
+            message: "Profile image is required",
+            success: false,
+          });
+        }
+
        
         //covert password into hashed
         const hashedPassword = await bcrypt.hash(password,10);
@@ -61,6 +69,7 @@ export const login = async(req, res) =>{
     try{
 
         const {email, password, role } = req.body;
+        console.log(email, password, role);
 
         if (!email || !password || !role){
             return res.status(404).json({
