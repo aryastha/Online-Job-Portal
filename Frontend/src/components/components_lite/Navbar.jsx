@@ -31,7 +31,7 @@ const Navbar = () => {
             {
               !user?(
                 <div className='flex items-center gap-2'>
-                  <Link to={'/signup'}>              
+                  <Link to={'/register'}>              
                    <Button className='bg-[#F39C12] hover:bg-[#d98c0f]'> Signup </Button>
                   </Link>
                   <Link to ={'/login'}>

@@ -4,7 +4,10 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { RadioGroup } from "../ui/radio-group";
-import { Link } from "react-router-dom";
+import { Link , useNavigate} from "react-router-dom";
+import {USER_API_ENDPOINT} from '@/utils/data.js'
+import axios from 'axios';
+import { toast } from "sonner"
 
 const Login = () => {
 
@@ -14,18 +17,27 @@ const Login = () => {
     role: '',
   })
 
+  const navigate = useNavigate();
+
   const changeEventHandler = (e) =>{
     setInput({...input, [e.target.name] : e.target.value});
   }
   
-  const submitHandler = (e) =>{
+  const submitHandler = async(e) =>{
     e.preventDefault();
     try{
-      const 
+      const res = await axios.post(`${USER_API_ENDPOINT}/login`, input,{
+        header: {"Content type": "application/json"},
+        withCredentials: true,
+      });
+      if (res.data.success){
+        navigate("/"),
+        toast.success(res.data.messasge);
 
+      }
     }catch(error){
       console.error(error);
-      alert("Something went wrong. Please try again later.");
+    toast.error("Login failed");
     }
   }
 
@@ -80,8 +92,8 @@ const Login = () => {
                     <div className= 'flex items-center justify-between'>
                     <p className=' text-gray-500 text-sm my-2'> 
                       Don't have an account? </p>
-                      <Link to={'/Signup'}>              
-                                         <Button className='bg-[#34566E] hover:bg-[#2C3E50] '> Signup </Button>
+                      <Link to={'/register'}>              
+                                         <Button className='bg-[#34566E] hover:bg-[#2C3E50] '> Register </Button>
                                         </Link>
                     </div>
         </form>

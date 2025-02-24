@@ -4,10 +4,13 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { RadioGroup } from "../ui/radio-group";
-import { Link } from "react-router-dom";
-import {USER_API_ENDPOINT} from '../utils/data'
+import { Link , useNavigate} from "react-router-dom";
+import {USER_API_ENDPOINT} from '@/utils/data.js'
 import axios from 'axios';
-const Signup = () => {
+import { toast } from "sonner"
+
+
+const register = () => {
 
     const [input, setInput] = useState({
       fullname: '',
@@ -18,6 +21,7 @@ const Signup = () => {
       file: '',
     })
   
+    const navigate = useNavigate();
     const changeEventHandler = (e) =>{
       setInput({...input, [e.target.name] : e.target.value});
     }
@@ -28,7 +32,7 @@ const Signup = () => {
     
     const submitHandler = async (e) => {
       e.preventDefault();
-      dispatch(setLoading(true)); // Optional: if you want to show loading before request
+      // dispatch(setLoading(true)); // Optional: if you want to show loading before request
     
       const formData = new FormData(); // Correct case: FormData
       formData.append('fullname', input.fullname);
@@ -41,7 +45,7 @@ const Signup = () => {
       }
     
       try {
-        const res = await axios.post(`${USER_API_ENDPOINT}/signup`, formData, {
+        const res = await axios.post(`${USER_API_ENDPOINT}/register`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true,
         });
@@ -55,9 +59,7 @@ const Signup = () => {
           ? error.response.data.message
           : "An unexpected error occurred.";
         toast.error(errorMessage);
-      } finally {
-        dispatch(setLoading(false));
-      }
+      } 
     };
     
 
@@ -122,7 +124,7 @@ const Signup = () => {
               className='cursor-pointer'
               />
             </div>
-            <Button type='submit' className='flex w-full my-7 bg-[#F39C12] hover:bg-[#d98c0f] rounded-md'> Signup </Button>
+            <Button type='submit' className='flex w-full my-7 bg-[#F39C12] hover:bg-[#d98c0f] rounded-md'> Register </Button>
           </div>
           {/* Login */}
           <div className= 'flex items-center justify-between'>
@@ -140,4 +142,4 @@ const Signup = () => {
 }
 
 
-export default Signup
+export default register

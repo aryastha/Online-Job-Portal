@@ -21,10 +21,6 @@ const userSchema = new mongoose.Schema(
             required: true,
             minlength: 8,
         },
-        pancard:{
-            type: String,
-            unique: true,
-        },
         role:{
             type:String,
             enum: ['Employee', 'Recruiter'],

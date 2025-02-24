@@ -9,9 +9,10 @@ dotenv.config();
 
 export const register = async(req,res) =>{
     try{
-        const {fullname,email, password, phoneNumber, pancard, role} = req.body;
+        const {fullname,email, password, phoneNumber, role} = req.body;
+        console.log(fullname,email, password, phoneNumber, role);
 
-        if (!fullname || !email || !password || !phoneNumber || !pancard || !role){
+        if (!fullname || !email || !password || !phoneNumber || !role){
             return res.status(404).json({
                 message: "Missing required fields",
                 sucess: false,
@@ -35,12 +36,12 @@ export const register = async(req,res) =>{
             email,
             password: hashedPassword,
             phoneNumber,
-            pancard,
             role,
         });
 
         await newUser.save();
 
+        console.log(newUser);
         return res.status(200).json({
             message: `User is registered successfully ${fullname}`,
             success: true,
@@ -148,7 +149,7 @@ export const logout = async(req, res) =>{
 
 export const updateProfile = async(req, res) =>{
     try{
-        const {fullname, email, phoneNumber, bio, skills, pancard} = req.body;
+        const {fullname, email, phoneNumber, bio, skills} = req.body;
         // const file = req.files;
         const userId = req.id //from middleware
         const user = await User.findById(userId);
@@ -185,9 +186,7 @@ export const updateProfile = async(req, res) =>{
        if (skills){
         user.profile.skills = skillsArray;
        }
-       if(pancard){
-        user.profile.pancard = pancard;
-       }
+       
 
         await user.save();
 
