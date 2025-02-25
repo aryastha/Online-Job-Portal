@@ -5,9 +5,12 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { RadioGroup } from "../ui/radio-group";
 import { Link , useNavigate} from "react-router-dom";
+import {useDispatch, useSelector} from 'react-redux';
 import {USER_API_ENDPOINT} from '@/utils/data.js'
 import axios from 'axios';
-import { toast } from "sonner"
+import { toast } from "sonner";
+import {setLoading} from '@/redux/authSlice.js';
+
 
 
 const register = () => {
@@ -22,6 +25,9 @@ const register = () => {
     })
   
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const {loading} = useSelector((store) => store.auth);
+
     const changeEventHandler = (e) =>{
       setInput({...input, [e.target.name] : e.target.value});
     }
@@ -32,7 +38,7 @@ const register = () => {
     
     const submitHandler = async (e) => {
       e.preventDefault();
-      // dispatch(setLoading(true)); // Optional: if you want to show loading before request
+      dispatch(setLoading(true)); // Optional: if you want to show loading before request
     
       const formData = new FormData(); // Correct case: FormData
       formData.append('fullname', input.fullname);
@@ -45,6 +51,9 @@ const register = () => {
       }
     
       try {
+
+        dispatch(setLoading(true));
+
         const res = await axios.post(`${USER_API_ENDPOINT}/register`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true,
@@ -59,8 +68,12 @@ const register = () => {
           ? error.response.data.message
           : "An unexpected error occurred.";
         toast.error(errorMessage);
-      } 
+      } finally{
+        dispatch(setLoading(false));
+      }
     };
+
+    const {user} = useSelector((store)=> store.auth);
     
 
   return (
@@ -124,18 +137,26 @@ const register = () => {
               className='cursor-pointer'
               />
             </div>
-            <Button type='submit' className='flex w-full my-7 bg-[#F39C12] hover:bg-[#d98c0f] rounded-md'> Register </Button>
-          </div>
+            {loading?(
+              <div className = 'flex items-center justify-center my-10'>
+                <div className='spinner-border text-blue-600' role='status'>
+                  <span className='sr-only'>Loading...</span>
+                </div>
+              </div>
+            ):(
+              <Button type='submit' className='flex w-full my-7 bg-[#F39C12] hover:bg-[#d98c0f] rounded-md'> Register </Button>
+            )
+            }
+            
           {/* Login */}
-          <div className= 'flex items-center justify-between'>
           <p className=' text-gray-500 text-sm my-2'> 
-            Already have an account? </p>
+            Already have an account? 
             <Link to={'/login'}>              
                                <Button className='bg-[#34566E] hover:bg-[#2C3E50] '> Login </Button>
                               </Link>
+            </p>
           </div>
-          
-        </form>
+          </form>
       </div>
     </div>
   )

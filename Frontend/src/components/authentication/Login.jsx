@@ -8,6 +8,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { USER_API_ENDPOINT } from "@/utils/data.js";
 import axios from "axios";
 import { toast } from "sonner";
+import {setLoading} from '@/redux/authSlice.js';
+import {useDispatch, useSelector} from 'react-redux';
 
 const Login = () => {
   const [input, setInput] = useState({
@@ -17,6 +19,8 @@ const Login = () => {
   });
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const {loading} = useSelector((store) => store.auth);
 
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
@@ -25,6 +29,7 @@ const Login = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
     try {
+      dispatch(setLoading(true));
       const res = await axios.post(`${USER_API_ENDPOINT}/login`, input, {
         header: { "Content type": "application/json" },
         withCredentials: true,
@@ -39,6 +44,8 @@ const Login = () => {
         ? error.response.data.message
         : "An unexpected error occurred.";
       toast.error(errorMessage);
+    }finally{
+      dispatch(setLoading(false));
     }
   };
 
@@ -99,13 +106,25 @@ const Login = () => {
                 <Label htmlFor="r2">Recruiter</Label>
               </div>
             </RadioGroup>
-            <Button
-              type="submit"
-              className="flex w-full my-7 bg-[#F39C12] hover:bg-[#d98c0f] rounded-md"
-            >
-              {" "}
-              Login{" "}
-            </Button>
+
+            {loading?(
+                          <div className = 'flex items-center justify-center my-10'>
+                            <div className='spinner-border text-blue-600' role='status'>
+                              <span className='sr-only'>Loading...</span>
+                            </div>
+                          </div>
+                        ):(
+                          <Button
+                          type="submit"
+                          className="flex w-full my-7 bg-[#F39C12] hover:bg-[#d98c0f] rounded-md"
+                        >
+                          {" "}
+                          Login{" "}
+                        </Button>
+                        )
+                        }
+            
+           
           </div>
           {/* Sign up */}
           <div className="flex items-center justify-between">
