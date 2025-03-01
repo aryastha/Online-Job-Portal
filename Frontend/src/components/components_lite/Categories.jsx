@@ -38,7 +38,7 @@ const Categories = () => {
       </div>
       <Carousel className="w-full max-w-2xl mx-auto">
         <CarouselContent className="space-x-5">
-          {Category.map((category) => {
+          {Category.map((category, index) => {
             return (
               <CarouselItem className="flex justify-center items-center md:basis-1/3 lg:basis-1/3 bg-white rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300">
                 <div className="text-center">
