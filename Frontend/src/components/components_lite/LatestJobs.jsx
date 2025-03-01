@@ -1,30 +1,3 @@
-// import React from 'react'
-// import JobCards from './JobCards'
-// const randomJobs = [1,2,3,4,5,6,7,8,9,10,11,12,13,14]
-
-// const LatestJobs = () => {
-//   return (
-//     <div className="max-w-7xl mx-auto my-7">
-//       <h2>
-//       <div className="text-3xl font-bold text-[#2C3E50]">
-//         Recommended Latest Jobs
-//       </div>
-//       </h2>
-//       {/* Job cards */}
-//       <div className="grid grid-cols-3 gap-7 my-6">
-//       {randomJobs.slice(0,6).map((job, index)=>(
-//          <JobCards key={index}/>
-//       ))}
-//       </div>
-      
-
-
-//     </div>
-//   )
-// }
-
-// export default LatestJobs
-
 import React from 'react';
 import JobCards from './JobCards';
 

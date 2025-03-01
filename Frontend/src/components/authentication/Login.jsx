@@ -8,8 +8,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { USER_API_ENDPOINT } from "@/utils/data.js";
 import axios from "axios";
 import { toast } from "sonner";
-import {setLoading} from '@/redux/authSlice.js';
-import {useDispatch, useSelector} from 'react-redux';
+import { setLoading } from "@/redux/authSlice.js";
+import { useDispatch, useSelector } from "react-redux";
 
 const Login = () => {
   const [input, setInput] = useState({
@@ -20,7 +20,7 @@ const Login = () => {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const {loading} = useSelector((store) => store.auth);
+  const { loading } = useSelector((store) => store.auth);
 
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
@@ -31,11 +31,11 @@ const Login = () => {
     try {
       dispatch(setLoading(true));
       const res = await axios.post(`${USER_API_ENDPOINT}/login`, input, {
-        header: { "Content type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         withCredentials: true,
       });
       if (res.data.success) {
-        navigate("/"), toast.success(res.data.messasge);
+        navigate("/");
         toast.success(res.data.message);
       }
     } catch (error) {
@@ -44,99 +44,90 @@ const Login = () => {
         ? error.response.data.message
         : "An unexpected error occurred.";
       toast.error(errorMessage);
-    }finally{
+    } finally {
       dispatch(setLoading(false));
     }
   };
 
   return (
-    <div className="bg-[#ECF0F1] min-h-screen">
-      <Navbar></Navbar>
-      <div className=" flex items-center justify-center max-w-7xl- mx-auto">
+    <div className="bg-[#F7F9FA] min-h-screen">
+      <Navbar />
+      <div className="flex items-center justify-center max-w-7xl mx-auto">
         <form
           onSubmit={submitHandler}
-          className="w-1/3 md:w-1/4 border border-gray-300 shadow-lg rounded-lg p-8 my-10 bg-[#F7F9FA]"
+          className="w-full md:w-1/2 lg:w-1/3 border border-gray-200 shadow-lg rounded-lg p-8 my-10 bg-white"
         >
-          <h1 className="font-bold text-xl mb-5 text-center text-[#2C3E50]">
+          <h1 className="font-bold text-2xl mb-6 text-center text-[#2C3E50]">
             Login
           </h1>
-
-          <div className="my-2">
-            <Label>Email</Label>
-            <Input
-              type="text"
-              name="email"
-              value={input.email}
-              onChange={changeEventHandler}
-              placeholder="Email"
-            ></Input>
-          </div>
-          <div className="my-2">
-            <Label>Password</Label>
-            <Input
-              type="text"
-              name="password"
-              value={input.password}
-              onChange={changeEventHandler}
-              placeholder="*********"
-            ></Input>
-          </div>
-          <div className="flex-col items-center ">
-            <RadioGroup className="flex items-center gap-4 my-5">
-              <div className="flex items-center space-x-2">
-                <Input
-                  type="radio"
-                  name="role"
-                  value="Employee"
-                  checked={input.role === "Employee"}
-                  onChange={changeEventHandler}
-                  cursor="pointer"
-                />
-                <Label htmlFor="r1">Employee</Label>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm font-medium text-[#2C3E50]">Email</Label>
+              <Input
+                type="email"
+                name="email"
+                value={input.email}
+                onChange={changeEventHandler}
+                placeholder="Enter your email"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label className="text-sm font-medium text-[#2C3E50]">Password</Label>
+              <Input
+                type="password"
+                name="password"
+                value={input.password}
+                onChange={changeEventHandler}
+                placeholder="*********"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label className="text-sm font-medium text-[#2C3E50]">Role</Label>
+              <RadioGroup className="flex items-center gap-4 mt-2">
+                <div className="flex items-center space-x-2">
+                  <Input
+                    type="radio"
+                    name="role"
+                    value="Employee"
+                    checked={input.role === "Employee"}
+                    onChange={changeEventHandler}
+                    className="cursor-pointer"
+                  />
+                  <Label>Employee</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Input
+                    type="radio"
+                    name="role"
+                    value="Recruiter"
+                    checked={input.role === "Recruiter"}
+                    onChange={changeEventHandler}
+                    className="cursor-pointer"
+                  />
+                  <Label>Recruiter</Label>
+                </div>
+              </RadioGroup>
+            </div>
+            {loading ? (
+              <div className="flex items-center justify-center my-6">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#E67E22]"></div>
               </div>
-              <div className="flex items-center space-x-2">
-                <Input
-                  type="radio"
-                  name="role"
-                  value="Recruiter"
-                  checked={input.role === "Recruiter"}
-                  onChange={changeEventHandler}
-                  cursor="pointer"
-                />
-                <Label htmlFor="r2">Recruiter</Label>
-              </div>
-            </RadioGroup>
-
-            {loading?(
-                          <div className = 'flex items-center justify-center my-10'>
-                            <div className='spinner-border text-blue-600' role='status'>
-                              <span className='sr-only'>Loading...</span>
-                            </div>
-                          </div>
-                        ):(
-                          <Button
-                          type="submit"
-                          className="flex w-full my-7 bg-[#F39C12] hover:bg-[#d98c0f] rounded-md"
-                        >
-                          {" "}
-                          Login{" "}
-                        </Button>
-                        )
-                        }
-            
-           
-          </div>
-          {/* Sign up */}
-          <div className="flex items-center justify-between">
-            <p className=" text-gray-500 text-sm my-2">
-              Don't have an account?{" "}
-            </p>
-            <Link to={"/register"}>
-              <Button className="bg-[#34566E] hover:bg-[#2C3E50] ">
-                {" "}
-                Register{" "}
+            ) : (
+              <Button
+                type="submit"
+                className="w-full mt-6 bg-[#E67E22] hover:bg-[#d9731d] text-white font-medium"
+              >
+                Login
               </Button>
-            </Link>
+            )}
+            <p className="text-sm text-gray-600 mt-4 text-center">
+              Don't have an account?{" "}
+              <Link to="/register" className="text-[#E67E22] hover:underline">
+                Register
+              </Link>
+            </p>
           </div>
         </form>
       </div>
