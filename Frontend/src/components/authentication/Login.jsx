@@ -8,7 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { USER_API_ENDPOINT } from "@/utils/data.js";
 import axios from "axios";
 import { toast } from "sonner";
-import { setLoading } from "@/redux/authSlice.js";
+import { setLoading , setUser} from "@/redux/authSlice.js";
 import { useDispatch, useSelector } from "react-redux";
 
 const Login = () => {
@@ -35,6 +35,7 @@ const Login = () => {
         withCredentials: true,
       });
       if (res.data.success) {
+        dispatch(setUser(res.data.user));
         navigate("/");
         toast.success(res.data.message);
       }

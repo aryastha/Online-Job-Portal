@@ -4,9 +4,13 @@ import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Popover, PopoverTrigger, PopoverContent } from '../ui/popover';
 import { LogOut, User2 } from 'lucide-react';
+import {useSelector} from 'react-redux';
 
 const Navbar = () => {
-  const user = false;
+  
+  const {user} =useSelector((store) => store.auth);
+  
+
 
   return (
     <div className="bg-white shadow-sm border-b border-gray-200">
