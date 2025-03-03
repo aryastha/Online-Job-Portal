@@ -9,7 +9,6 @@ import {useSelector} from 'react-redux';
 const Navbar = () => {
   
   const {user} =useSelector((store) => store.auth);
-  
 
 
   return (
@@ -98,13 +97,16 @@ const Navbar = () => {
                   </div>
                 </div>
                 <div className="flex flex-col space-y-2">
+                <Link to="./profile">
                   <Button
                     variant="ghost"
                     className="w-full justify-start gap-2 hover:bg-gray-100 text-[#2C3E50]"
                   >
+                   
                     <User2 size={16} />
                     Profile
                   </Button>
+                  </Link>
                   <Button
                     variant="ghost"
                     className="w-full justify-start gap-2 hover:bg-gray-100 text-[#2C3E50]"
