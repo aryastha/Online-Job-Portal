@@ -1,19 +1,35 @@
 import React from "react";
 import { Badge } from "../ui/badge";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { Avatar, AvatarImage } from "../ui/avatar";
 import { Briefcase, MapPin, DollarSign, Users, Bookmark } from "lucide-react";
+import Description from "./Description";
 
 const Job1 = () => {
+
+  const navigate = useNavigate();
+  const jobId = "123";
   return (
-    <div className="mb-6"> {/* Increased margin between cards */}
-      <div className="p-6 shadow-sm border border-gray-100 bg-white rounded-lg cursor-pointer hover:shadow-md transition-all duration-200 w-[320px]"> {/* Fixed width for square-like appearance */}
+    <div className="mb-6">
+      {" "}
+      {/* Increased margin between cards */}
+      <div className="p-6 shadow-sm border border-gray-100 bg-white rounded-lg cursor-pointer hover:shadow-md transition-all duration-200 w-[320px]">
+        {" "}
+        {/* Fixed width for square-like appearance */}
         {/* Company Info */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
             <p className="text-gray-500 text-sm font-light">3 days ago</p>
-            <Button variant="ghost" className="rounded-full p-2 hover:bg-gray-50" size="icon">
-              <Bookmark size={18} className="text-gray-600 hover:text-gray-800" />
+            <Button
+              variant="ghost"
+              className="rounded-full p-2 hover:bg-gray-50"
+              size="icon"
+            >
+              <Bookmark
+                size={18}
+                className="text-gray-600 hover:text-gray-800"
+              />
             </Button>
           </div>
 
@@ -30,7 +46,6 @@ const Job1 = () => {
             </div>
           </div>
         </div>
-
         {/* Job Info */}
         <div className="mb-6">
           <h2 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
@@ -41,7 +56,6 @@ const Job1 = () => {
             at dolor id amet repellat, beatae suscipit laboriosam eos saepe?
           </p>
         </div>
-
         {/* Job Details - Badges */}
         <div className="flex flex-wrap gap-2 mb-6">
           <Badge className="bg-gray-50 text-gray-700 hover:bg-gray-100 flex items-center gap-1 px-3 py-1 text-sm border border-gray-200">
@@ -57,13 +71,22 @@ const Job1 = () => {
             <MapPin size={14} /> Nepal
           </Badge>
         </div>
-
         {/* Action Buttons */}
         <div className="flex items-center gap-4">
-          <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
-            Details
-          </Button>
-          <Button variant="solid" className="bg-blue-500 text-white hover:bg-blue-600">
+         
+            <Button onClick ={() => {navigate(`/description/${jobId}`)}}
+              variant="outline"
+              className="border-gray-300 text-gray-700 hover:bg-gray-50"
+            >
+              <Description />
+              Details
+            </Button>
+       
+
+          <Button
+            variant="solid"
+            className="bg-[#2C3E50] text-white hover:bg-blue-600"
+          >
             Save for Later
           </Button>
         </div>

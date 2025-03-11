@@ -5,7 +5,8 @@ import Login from './components/authentication/Login'
 import Signup from './components/authentication/Signup'
 import Jobs from './components/components_lite/Jobs.jsx'
 import Browse from './components/components_lite/Browse.jsx'
-import Profile from './components/components_lite/Profile'
+import Description from './components/components_lite/Description.jsx'
+import Profile from './components/components_lite/Profile.jsx'
 
 const appRouter = createBrowserRouter([
   {
@@ -25,6 +26,9 @@ const appRouter = createBrowserRouter([
   },
   {
     path: '/profile', element: <Profile />
+  },
+  {
+    path: '/description/:id', element: <Description />
   }
 ]);
 
