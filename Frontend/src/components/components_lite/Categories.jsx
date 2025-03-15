@@ -40,7 +40,7 @@ const Categories = () => {
         <CarouselContent className="space-x-5">
           {Category.map((category, index) => {
             return (
-              <CarouselItem className="flex justify-center items-center md:basis-1/3 lg:basis-1/3 bg-white rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300">
+              <CarouselItem key={index }className="flex justify-center items-center md:basis-1/3 lg:basis-1/3 bg-white rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300">
                 <div className="text-center">
                   <h3 className="font-semibold text-[#2C3E50] p-2">{category}</h3>
                 </div>
