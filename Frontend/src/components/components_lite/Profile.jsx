@@ -1,14 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import Navbar from "./Navbar";
 import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Pen, Mail, Contact } from "lucide-react";
 import AppliedJobs from "./AppliedJobs";
+import EditProfileModel from "./EditProfileModel";
 
 const Profile = () => {
   const isResume = true;
   const skills = ["SEO", "Keyword Research", "Google Analytics", "Wordpress"];
+
+  const [open, setOpen] = useState(false);
 
   return (
     <div>
@@ -41,9 +44,13 @@ const Profile = () => {
         </div>
 
           {/* Edit Button aligned properly */}
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button 
+          onClick={() => setOpen(true) }
+          variant="outline" 
+          className="flex items-center gap-2">
             <Pen size={16} />
             Edit
+            
           </Button>
         </div>
 
@@ -109,7 +116,10 @@ const Profile = () => {
           <h2 className="text-md font-bold"> Applied Jobs</h2>
           <AppliedJobs />
       </div>
-    </div>
+
+      {/* Edit Profile Model */}
+      <EditProfileModel open={open} setOpen={setOpen} />
+      </div>
   );
 };
 

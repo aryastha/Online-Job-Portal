@@ -34,7 +34,6 @@ export const register = async(req,res) =>{
             success: false,
           });
         }
-
        
         //covert password into hashed
         const hashedPassword = await bcrypt.hash(password,10);
@@ -163,7 +162,6 @@ export const updateProfile = async(req, res) =>{
         const userId = req.id //from middleware
         const user = await User.findById(userId);
 
-
 //Cloudinary upload
         
         let skillsArray =[];
@@ -199,18 +197,18 @@ export const updateProfile = async(req, res) =>{
 
         await user.save();
 
-        // const updatedUser={
-        //     _id: user.id,
-        //     fullname: user.fullname,
-        //     email: user.email,
-        //     role: user.role,
-        //     phoneNumber: user.phoneNumber,
-        //     profile: user.profile,
-        // };
+        const updatedUser={
+            _id: user.id,
+            fullname: user.fullname,
+            email: user.email,
+            role: user.role,
+            phoneNumber: user.phoneNumber,
+            profile: user.profile,
+        };
 
         return res.status(200).json({
             message: `Profile updated successfully ${fullname}`,
-            user,
+            user: updatedUser,
             success: true,
         })
 
