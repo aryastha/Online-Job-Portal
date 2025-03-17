@@ -28,7 +28,7 @@ const Profile = () => {
             <div className="h-20 w-20 rounded-full overflow-hidden border border-gray-300">
               <Avatar className="h-full w-full">
                 <AvatarImage
-                  src="https://github.com/shadcn.png"
+                  src={user?.profile.profilePhoto} 
                   alt="profilepicture"
                   className="w-full h-full object-cover"
                 />
