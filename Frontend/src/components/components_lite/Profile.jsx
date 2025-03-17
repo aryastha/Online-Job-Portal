@@ -6,12 +6,16 @@ import { Badge } from "../ui/badge";
 import { Pen, Mail, Contact } from "lucide-react";
 import AppliedJobs from "./AppliedJobs";
 import EditProfileModel from "./EditProfileModel";
+import { useSelector } from "react-redux";
 
 const Profile = () => {
-  const isResume = true;
-  const skills = ["SEO", "Keyword Research", "Google Analytics", "Wordpress"];
 
   const [open, setOpen] = useState(false);
+  const {user} = useSelector((store)=>store.auth);
+
+  const isResume = true;
+
+
 
   return (
     <div>
@@ -33,12 +37,9 @@ const Profile = () => {
 
             {/* User Info */}
             <div className="">
-              <h1 className="font-medium text-lg">Full Name</h1>
+              <h1 className="font-medium text-lg">{user?.fullname}</h1>
               <p className="text-gray-600 text-justify max-w-2xl text-sm">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                Asperiores quisquam adipisci facilis voluptas minima? Deserunt
-                labore voluptatem sunt, dolor inventore, ratione numquam
-                voluptatum iste officia sint veritatis ipsum impedit quasi?
+                {user?.profile?.bio}
               </p>
             </div>
         </div>
@@ -58,20 +59,22 @@ const Profile = () => {
         <div className="mt-5">
           <div className="flex items-center gap-3 my-2">
             <Mail size={18} />
-            <span>aryashrestha888@gmail.com</span>
+            <span>
+              <a href={`mailto:${user?.email}`}>{user?.email}</a></span>
           </div>
 
           <div className="flex items-center gap-3 my-2">
             <Contact size={18} />
-            <span>9864831310</span>
+            <span>
+              <a href={`tel:${user?.phoneNumber}`}>{user?.phoneNumber}</a></span>
           </div>
         </div>
 
         <div>
           <h2 className="text-medium font-bold mt-5"> Skills </h2>
           <div className="flex items-center gap-5 mt-4">
-            {skills.length !== 0 ? (
-              skills.map((item, index) => (
+            {user?.profile?.skills.length !== 0 ? (
+              user?.profile?.skills.map((item, index) => (
                 <Badge
                   key={index}
                   variant="outline"
@@ -94,14 +97,14 @@ const Profile = () => {
             {isResume ? (
               <a
                 target="_blank"
-                href="https://www.youtube.com/watch?v=3LXrE1Cs5bk&t=22141s"
+                href={user?.profile?.resume}
               >
                 <Button
                   variant="outline"
                   className="p-3 mt-4 bg-[#2C3E50] text-white hover:bg-[#394f66] hover:text-white"
                 >
                   {" "}
-                  Download CV
+                  Download
                 </Button>
               </a>
             ) : (
