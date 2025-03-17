@@ -158,7 +158,10 @@ export const logout = async(req, res) =>{
 export const updateProfile = async(req, res) =>{
     try{
         const {fullname, email, phoneNumber, bio, skills} = req.body;
-        // const file = req.files;
+        const file = req.files;
+        console.log(fullname,email, phoneNumber, bio, skills);
+
+
         const userId = req.id //from middleware
         const user = await User.findById(userId);
 

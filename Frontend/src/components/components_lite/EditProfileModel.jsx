@@ -16,6 +16,7 @@ import { Loader2 } from "lucide-react";
 import axios from "axios"; 
 
 const EditProfileModel = ({ open, setOpen }) => {
+
   const [loading, setLoading] = useState(false);
 
   const { user } = useSelector((store) => store.auth);
@@ -42,6 +43,7 @@ const EditProfileModel = ({ open, setOpen }) => {
 
   const handleFileChange = async (e) => {
     e.preventDefault();
+    console.log(input);
     const formData = new FormData();
     formData.append("fullname", input.fullname);
     formData.append("email", input.email);
@@ -78,13 +80,13 @@ const EditProfileModel = ({ open, setOpen }) => {
     }
 
     setOpen(false);
-    console.log(input);
   };
 
   return (
     <div>
       <Dialog open={open}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px]"
+        onInteractOutside = {() => setOpen(false)}>
           <DialogHeader>
             <DialogTitle>Edit Profile</DialogTitle>
           </DialogHeader>
