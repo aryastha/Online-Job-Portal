@@ -98,7 +98,6 @@ export const getJobById = async (req, res) => {
 };
 
 //Admin job created
-
 export const getAdminJobs = async (req, res) => {
   try {
     const adminId = req.id;
