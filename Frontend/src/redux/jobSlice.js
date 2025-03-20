@@ -4,13 +4,14 @@ const jobSlice = createSlice({
 
     name: "job",
     initialState:{
-        alljobs:[],
+        allJobs:[],
     },
 
     reducers: {
         //actions
         setAllJobs: (state,action) =>{
-            state.alljobs = action.payload;
+            console.log("Setting jobs in Redux:", action.payload);  // Debugging
+            state.allJobs = action.payload;
         }
     },
 

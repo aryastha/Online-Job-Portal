@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { Avatar, AvatarImage } from "../ui/avatar";
 import { Briefcase, MapPin, DollarSign, Users, Bookmark } from "lucide-react";
-import Description from "./Description";
 
 const Job1 = () => {
 
