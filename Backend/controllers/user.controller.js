@@ -37,6 +37,9 @@ export const register = async (req, res) => {
       });
     }
 
+    const fileUri = getDataUri(file);
+    const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+
     //covert password into hashed
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -46,6 +49,9 @@ export const register = async (req, res) => {
       password: hashedPassword,
       phoneNumber,
       role,
+      profile:{
+        profilePhoto: cloudResponse.secure_url,
+      }
     });
 
     await newUser.save();

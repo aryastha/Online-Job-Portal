@@ -5,7 +5,8 @@ import path from "path";
 const getDataUri = (file) => {
     const parser = new DataUriParser();
     const extName = path.extname(file.originalname).toString();
-    return parser.format(extName, file.buffer); //Converts the file buffer into a Data URI format.
+    //buffer contains the binary data of the file
+    return parser.format(extName, file.buffer); // parser helps to Convert the file buffer into a Data URI format.
 };
 
 export default getDataUri;
