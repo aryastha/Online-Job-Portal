@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 const LatestJobs = () => {
 
   const allJobs = useSelector((state)=>state.job?.allJobs || []);
-  console.log("Jobs from Redux Store:", allJobs);
+  console.log("All Jobs in LatestJobs:", allJobs);
 
   return (
     <div className="max-w-7xl mx-auto my-14 px-4 sm:px-6 lg:px-8">

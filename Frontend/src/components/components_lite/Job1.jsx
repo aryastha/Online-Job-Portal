@@ -5,9 +5,10 @@ import { Button } from "../ui/button";
 import { Avatar, AvatarImage } from "../ui/avatar";
 import { Briefcase, MapPin, DollarSign, Users, Bookmark } from "lucide-react";
 
-const Job1 = () => {
+const Job1 = ({job}) => {
 
   const navigate = useNavigate();
+  console.log("Job in job1 data", job)
   const jobId = "123";
   return (
     <div className="mb-6">
@@ -38,7 +39,7 @@ const Job1 = () => {
             </Avatar>
 
             <div>
-              <h1 className="font-bold text-xl text-gray-800">Company Name</h1>
+              <h1 className="font-bold text-xl text-gray-800">{job.company.name}</h1> 
               <p className="text-sm text-gray-600 flex items-center gap-1">
                 <MapPin size={16} className="text-gray-500" /> Nepal
               </p>
@@ -48,26 +49,25 @@ const Job1 = () => {
         {/* Job Info */}
         <div className="mb-6">
           <h2 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
-            <Briefcase size={18} className="text-gray-700" /> Job Title
+            <Briefcase size={18} className="text-gray-700" /> {job.title}
           </h2>
           <p className="text-sm text-gray-600 mt-2 leading-relaxed">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptates
-            at dolor id amet repellat, beatae suscipit laboriosam eos saepe?
+            {job.description}
           </p>
         </div>
         {/* Job Details - Badges */}
         <div className="flex flex-wrap gap-2 mb-6">
           <Badge className="bg-gray-50 text-gray-700 hover:bg-gray-100 flex items-center gap-1 px-3 py-1 text-sm border border-gray-200">
-            <DollarSign size={14} /> Salary
+            <DollarSign size={14} />  {job.salary}
           </Badge>
           <Badge className="bg-gray-50 text-gray-700 hover:bg-gray-100 flex items-center gap-1 px-3 py-1 text-sm border border-gray-200">
-            <Briefcase size={14} /> Position
+            <Briefcase size={14} /> {job.position}
           </Badge>
           <Badge className="bg-gray-50 text-gray-700 hover:bg-gray-100 flex items-center gap-1 px-3 py-1 text-sm border border-gray-200">
-            <Users size={14} /> Candidates
+            <Users size={14} /> {job.location}
           </Badge>
           <Badge className="bg-gray-50 text-gray-700 hover:bg-gray-100 flex items-center gap-1 px-3 py-1 text-sm border border-gray-200">
-            <MapPin size={14} /> Nepal
+            <MapPin size={14} /> {job.jobType}
           </Badge>
         </div>
         {/* Action Buttons */}

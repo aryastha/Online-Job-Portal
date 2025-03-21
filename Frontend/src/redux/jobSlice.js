@@ -12,6 +12,7 @@ const jobSlice = createSlice({
         setAllJobs: (state,action) =>{
             console.log("Setting jobs in Redux:", action.payload);  // Debugging
             state.allJobs = action.payload;
+
         }
     },
 
