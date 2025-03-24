@@ -15,12 +15,9 @@ function useGetAllJobs() {
         const res = await axios.get(`${JOB_API_ENDPOINT}/get`, {
           withCredentials: true,
         });
-        console.log("Fetched jobs from API:", res.data); // Debugging
 
         if (res.data.status) {
-          console.log("Before dispatch - jobs:", res.data.jobs); // Debug before dispatch
           dispatch(setAllJobs(res.data.jobs)); //sent to the redux store
-          console.log("After dispatch"); // Debug after dispatch
         }else{
             console.log("API was not successful:", res.data);
         }
