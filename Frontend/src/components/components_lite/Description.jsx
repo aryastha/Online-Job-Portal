@@ -111,13 +111,14 @@ const Description = () => {
 
       {/* About Company */}
       <div className="mt-4">
-        <h1 className="font-bold text-gray-900">
-          About Company:
-          <span className="text-gray-700 font-normal pl-2">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit.
-          </span>
-        </h1>
-      </div>
+      <h1 className="font-bold text-gray-900">Requirements:</h1>
+      <ul className="text-gray-700 font-normal pl-4 list-disc">
+        {singleJob?.requirements?.map((requirement, index) => (
+          <li key={index}>{requirement.trim()}</li> // Trim removes extra spaces
+        ))}
+      </ul>
+    </div>
+    
 
       {/* Total Applicants */}
       <div className="mt-4">
