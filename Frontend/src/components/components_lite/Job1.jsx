@@ -7,7 +7,17 @@ import { Briefcase, MapPin, DollarSign, Users, Bookmark } from "lucide-react";
 
 const Job1 = ({ job }) => {
   const navigate = useNavigate();
-  const jobId = "123";
+  // const jobId = "123";
+  const daysAgo = (mongodbTime) =>{
+    if (!mongodbTime) return null;
+    const createdAt = new Date(mongodbTime);
+    if (isNaN(createdAt.getTime())) return null;
+    
+    const currentTime = new Date();
+    const timeDiff = currentTime.getTime() - createdAt.getTime();
+     return Math.floor(timeDiff / (1000 * 3600 * 24))
+  }
+
 
   return (
     <div className="mb-6">
@@ -15,7 +25,12 @@ const Job1 = ({ job }) => {
         {/* Company Info */}
         <div>
           <div className="flex justify-between items-center mb-4">
-            <p className="text-gray-500 text-sm font-light">3 days ago</p>
+            <p className="text-gray-500 text-sm font-light">
+              {daysAgo(job?.updatedAt) === 0
+              ? "Today"
+              : `${daysAgo(job?.updatedAt)} days ago`
+            }  
+            </p>
             <Button
               variant="ghost"
               className="rounded-full p-2 hover:bg-gray-50"
@@ -74,7 +89,7 @@ const Job1 = ({ job }) => {
         <div className="flex items-center gap-4">
           <Button
             onClick={() => {
-              navigate(`/description/${jobId}`);
+              navigate(`/description/${job._id}`);
             }}
             variant="outline"
             className="border-gray-300 text-gray-700 hover:bg-gray-50"

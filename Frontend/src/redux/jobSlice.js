@@ -5,18 +5,23 @@ const jobSlice = createSlice({
     name: "job",
     initialState:{
         allJobs:[],
+        singleJob: null, //To hold the job until the user clciks on a job
     },
 
     reducers: {
         //actions
         setAllJobs: (state,action) =>{
-            console.log("Setting jobs in Redux:", action.payload);  // Debugging
             state.allJobs = action.payload;
+        },
 
+        setSingleJob: (state, action)=>{
+            state.singleJob = action.payload;
         }
+
+
     },
 
 });
 
-export const {setAllJobs} = jobSlice.actions;
+export const {setAllJobs, setSingleJob} = jobSlice.actions;
 export default jobSlice.reducer; 

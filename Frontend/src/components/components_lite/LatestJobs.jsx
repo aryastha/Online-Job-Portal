@@ -17,7 +17,7 @@ const LatestJobs = () => {
         </h2>
         <p className="mt-3 text-lg text-gray-600">
           Explore the latest job opportunities tailored just for you.
-        </p>
+        </p>      
       </div>
 
       {/* Job Cards Grid */}
