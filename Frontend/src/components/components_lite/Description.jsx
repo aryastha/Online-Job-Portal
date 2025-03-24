@@ -1,14 +1,22 @@
-
-
 import React, { useState, useEffect } from "react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
-import { Briefcase, MapPin, DollarSign, Users, ArrowLeft, Clock, Award, FileText } from "lucide-react";
+import {
+  Briefcase,
+  MapPin,
+  DollarSign,
+  Users,
+  ArrowLeft,
+  Clock,
+  Award,
+  FileText,
+} from "lucide-react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
-import { JOB_API_ENDPOINT } from "@/utils/data";
+import { APPLICATION_API_ENDPOINT, JOB_API_ENDPOINT } from "@/utils/data";
 import { setSingleJob } from "@/redux/jobSlice";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
 
 const Description = (job) => {
   const params = useParams();
@@ -21,21 +29,54 @@ const Description = (job) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const isInitiallyApplied =
+    singleJob?.application?.some(
+      (application) => application.applicant === user?._id
+    ) || false;
 
+  const [isApplied, setisApplied] = useState(isInitiallyApplied);
 
+  const applyJobHandler = async () => {
+    try {
+      const res = await axios.get(
+        `${APPLICATION_API_ENDPOINT}/apply/${jobId}`,
+        { withCredentials: true }
+      );
 
+      if (res.data.success) {
+        setisApplied(true);
+        const updateSingleJob = {
+          ...singleJob,
+          applications: [...singleJob.applications, { applicant: user?._id }],
+        };
+        //{...singleJob} - Creates a shallow copy of the original job object
 
-  
+        // applications: [...] - Overwrites just the applications array
+
+        //[...singleJob.applications, {applicant:user?._id}]: Copies all existing applications and Adds new application object at the end
+
+        console.log(res.data);
+        toast.success(res.data.message);
+        dispatch(setSingleJob(updateSingleJob));
+      }
+    } catch (error) {
+      console.log(error.message);
+      toast.error(error.response.data.message);
+    }
+  };
+
   useEffect(() => {
     const fetchSingleJob = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        setLoading(true);
-        setError(null);
+        
         const res = await axios.get(`${JOB_API_ENDPOINT}/get/${jobId}`, {
           withCredentials: true,
         });
         if (res.data.status) {
           dispatch(setSingleJob(res.data.job));
+          // setisApplied(res.data.job.applications.some(application => application.applicant === user?._id));
         } else {
           setError("Failed to fetch the jobs");
         }
@@ -49,13 +90,18 @@ const Description = (job) => {
     fetchSingleJob();
   }, [jobId, dispatch, user?._id]);
 
-  if (loading) return <div className="max-w-7xl mx-auto p-8 text-center">Loading job details...</div>;
-  if (error) return <div className="max-w-7xl mx-auto p-8 text-red-500">Error: {error}</div>;
-  if (!singleJob) return <div className="max-w-7xl mx-auto p-8">No job data found.</div>;
-
-  const isApplied = singleJob.application?.some(
-    (application) => application.applicant === user?._id
-  ) || false;
+  if (loading)
+    return (
+      <div className="max-w-7xl mx-auto p-8 text-center">
+        Loading job details...
+      </div>
+    );
+  if (error)
+    return (
+      <div className="max-w-7xl mx-auto p-8 text-red-500">Error: {error}</div>
+    );
+  if (!singleJob)
+    return <div className="max-w-7xl mx-auto p-8">No job data found.</div>;
 
   return (
     <div className="max-w-4xl mx-auto my-8 p-6 bg-white rounded-xl shadow-lg">
@@ -72,13 +118,16 @@ const Description = (job) => {
       <div className="mb-8">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{singleJob?.title}</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              {singleJob?.title}
+            </h1>
             <p className="text-lg text-gray-600 mb-4">{singleJob?.position}</p>
           </div>
           <div className="bg-[#E67E22]/10 px-4 py-2 rounded-lg">
-            <span className="text-[#E67E22] font-semibold">{singleJob.jobType}</span>
+            <span className="text-[#E67E22] font-semibold">
+              {singleJob.jobType}
+            </span>
           </div>
-          
         </div>
 
         {/* Badges */}
@@ -101,6 +150,7 @@ const Description = (job) => {
       {/* Apply Button */}
       <div className="mb-8">
         <Button
+          onClick={isApplied ? null : applyJobHandler}
           className={`rounded-xl px-8 py-3 text-lg font-semibold transition-all duration-300 shadow-md ${
             isApplied
               ? "bg-gray-400 cursor-not-allowed"
@@ -120,7 +170,9 @@ const Description = (job) => {
             <FileText size={20} className="text-[#E67E22]" />
             Job Description
           </h2>
-          <p className="text-gray-700 leading-relaxed">{singleJob.description}</p>
+          <p className="text-gray-700 leading-relaxed">
+            {singleJob.description}
+          </p>
         </div>
 
         {/* Details Grid */}
@@ -137,18 +189,15 @@ const Description = (job) => {
                 <p className="text-gray-700">{singleJob?.title}</p>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Experience Level</h3>
+                <h3 className="font-semibold text-gray-900">
+                  Experience Level
+                </h3>
                 <p className="text-gray-700">{singleJob?.experienceLevel}</p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">Salary</h3>
                 <p className="text-gray-700">Rs: {singleJob?.salary}</p>
               </div>
-              {/* <div>
-                <h3 className="font-semibold text-gray-900">Company</h3>
-                <p className="text-gray-700">{job?.company?.name}
-                </p>
-              </div> */}
             </div>
           </div>
 
@@ -174,10 +223,14 @@ const Description = (job) => {
             <div>
               <h2 className="text-xl font-bold text-gray-900">Applications</h2>
               <p className="text-gray-600">
-                {singleJob?.applications?.length} applicant{singleJob?.applications?.length !== 1 ? 's' : ''} have applied
+                {singleJob?.applications?.length} applicant
+                {singleJob?.applications?.length !== 1 ? "s" : ""} have applied
               </p>
             </div>
-            <Button variant="outline" className="border-[#E67E22] text-[#E67E22] hover:bg-[#E67E22]/10">
+            <Button
+              variant="outline"
+              className="border-[#E67E22] text-[#E67E22] hover:bg-[#E67E22]/10"
+            >
               View Applicants
             </Button>
           </div>
