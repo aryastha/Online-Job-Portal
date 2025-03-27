@@ -2,6 +2,7 @@ import { configureStore , combineReducers} from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
 import jobSlice from "./jobSlice";
 import jobReducer from './jobSlice'
+import { companySlice } from "./companySlice";
 
 // import { createRoot } from "react-dom/client";
 // import {
@@ -43,6 +44,7 @@ const store = configureStore({
     auth: authReducer, //for auth reducer
     job: jobSlice,
     jobs:jobReducer,
+    company: companySlice,
   }
 
 });

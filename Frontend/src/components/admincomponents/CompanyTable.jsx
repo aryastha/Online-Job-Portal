@@ -9,92 +9,152 @@ import {
   TableRow,
 } from "../ui/table";
 import { Avatar, AvatarFallback } from "../ui/avatar";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
-import { Edit2, MoreHorizontal, Trash2, Eye } from "lucide-react";
+import { Edit2, MoreHorizontal, Globe, MapPin } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 const CompanyTable = () => {
-  // Sample data - replace with your actual data
+  // Static data matching your MongoDB schema
   const companies = [
     {
-      id: 1,
-      name: "BakeandMunch",
+      _id: "1",
+      name: "TechNova Solutions",
+      description: "Innovative software development company specializing in AI solutions",
+      website: "https://technova.com",
+      location: "San Francisco, CA",
       logo: "",
-      date: "04/08/2003",
-      industry: "Food & Beverage",
-      employees: "50-100"
+      createdAt: "2023-05-15T10:00:00Z",
+      userId: ["user1"]
     },
     {
-      id: 2,
-      name: "TechNova",
-      logo: "",
-      date: "12/05/2022",
-      industry: "Information Technology",
-      employees: "200-500"
+      _id: "2",
+      name: "GreenEarth Organics",
+      description: "Sustainable organic food production and distribution",
+      website: "https://greenearth.org",
+      location: "Portland, OR",
+      logo: "https://example.com/logos/greenearth.png",
+      createdAt: "2023-02-20T14:30:00Z",
+      userId: ["user2"]
     },
     {
-      id: 3,
-      name: "GreenEarth",
+      _id: "3",
+      name: "UrbanSpace Design",
+      description: "Modern architectural firm focused on urban spaces",
+      website: "",
+      location: "New York, NY",
       logo: "",
-      date: "22/11/2021",
-      industry: "Environmental Services",
-      employees: "100-200"
+      createdAt: "2023-07-01T09:15:00Z",
+      userId: ["user3", "user4"]
+    },
+    {
+      _id: "4",
+      name: "HealthPlus Medical",
+      description: "Healthcare provider with nationwide clinics",
+      website: "https://healthplus.net",
+      location: "Chicago, IL",
+      logo: "",
+      createdAt: "2023-01-10T16:45:00Z",
+      userId: ["user5"]
     }
   ];
 
   return (
-    <Table>
-      <TableCaption className="text-left p-4 bg-gray-50 border-b">
-        Showing {companies.length} registered companies
+    <Table className="min-w-full">
+      <TableCaption className="text-left px-4 py-3 bg-gray-50 border-b">
+        <div className="flex justify-between items-center">
+          <span>Showing {companies.length} companies</span>
+          <div className="flex space-x-2">
+            <Button variant="outline" size="sm">
+              Export
+            </Button>
+          </div>
+        </div>
       </TableCaption>
       <TableHeader className="bg-gray-50">
         <TableRow>
-          <TableHead className="w-[100px]">Logo</TableHead>
-          <TableHead>Company Name</TableHead>
-          <TableHead>Industry</TableHead>
-          <TableHead>Employees</TableHead>
-          <TableHead>Registered</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
+          <TableHead className="w-[60px]">Logo</TableHead>
+          <TableHead>Company</TableHead>
+          <TableHead>Location</TableHead>
+          <TableHead>Website</TableHead>
+          <TableHead>Added</TableHead>
+          <TableHead className="text-right w-[50px]">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {companies.map((company) => (
-          <TableRow key={company.id} className="hover:bg-gray-50">
+          <TableRow key={company._id} className="hover:bg-gray-50">
+            {/* Logo */}
             <TableCell>
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-9 w-9">
                 {company.logo ? (
-                  <AvatarImage src={company.logo} alt={`${company.name} logo`} />
+                  <img src={company.logo} alt={company.name} />
                 ) : (
-                  <AvatarFallback className="bg-indigo-100 text-indigo-600 font-medium">
+                  <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
                     {company.name.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 )}
               </Avatar>
             </TableCell>
-            <TableCell className="font-medium">{company.name}</TableCell>
-            <TableCell>{company.industry}</TableCell>
-            <TableCell>{company.employees}</TableCell>
-            <TableCell>{company.date}</TableCell>
+
+            {/* Company Name & Description */}
+            <TableCell>
+              <div className="font-medium">{company.name}</div>
+              <div className="text-sm text-gray-500 line-clamp-1">
+                {company.description}
+              </div>
+            </TableCell>
+
+            {/* Location */}
+            <TableCell>
+              {company.location && (
+                <div className="flex items-center text-sm">
+                  <MapPin className="h-4 w-4 mr-1 text-gray-400" />
+                  {company.location}
+                </div>
+              )}
+            </TableCell>
+
+            {/* Website */}
+            <TableCell>
+              {company.website ? (
+                <a
+                  href={company.website.startsWith('http') ? company.website : `https://${company.website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center text-blue-600 hover:underline text-sm"
+                >
+                  <Globe className="h-4 w-4 mr-1" />
+                  {company.website.replace(/(^\w+:|^)\/\//, '').split('/')[0]}
+                </a>
+              ) : (
+                <span className="text-gray-400 text-sm">Not provided</span>
+              )}
+            </TableCell>
+
+            {/* Created At */}
+            <TableCell>
+              <div className="text-sm text-gray-500">
+                {new Date(company.createdAt).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
+                })}
+              </div>
+            </TableCell>
+
+            {/* Actions */}
             <TableCell className="text-right">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-48 p-2" align="end">
+                <PopoverContent className="w-40 p-2" align="end">
                   <div className="space-y-1">
-                    <Button variant="ghost" className="w-full justify-start">
-                      <Eye className="mr-2 h-4 w-4" />
-                      View
-                    </Button>
                     <Button variant="ghost" className="w-full justify-start">
                       <Edit2 className="mr-2 h-4 w-4" />
                       Edit
-                    </Button>
-                    <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-600">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
                     </Button>
                   </div>
                 </PopoverContent>
