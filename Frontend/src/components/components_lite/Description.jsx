@@ -76,7 +76,7 @@ const Description = (job) => {
         });
         if (res.data.status) {
           dispatch(setSingleJob(res.data.job));
-          // setisApplied(res.data.job.applications.some(application => application.applicant === user?._id));
+          setisApplied(res.data.job.applications.some(application => application.applicant === user?._id));
         } else {
           setError("Failed to fetch the jobs");
         }

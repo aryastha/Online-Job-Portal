@@ -1,6 +1,7 @@
 import React from 'react';
 import JobCards from './JobCards';
 import { useSelector } from 'react-redux';
+// import { AllJobs } from '@/redux/jobSlice';
 
 
 const LatestJobs = () => {
