@@ -6,14 +6,17 @@ import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
 import { COMPANY_API_ENDPOINT } from "@/utils/data";
 import { toast } from "sonner";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setSingleCompany } from "@/redux/companySlice";
 import axios from "axios";
 
 const CompanyCreate = () => {
+
+
   const navigate = useNavigate();
   const [companyName, setCompanyName] = useState();
   const dispatch = useDispatch();
+
   const registerNewCompany = async () => {
     try {
       const res = await axios.post(

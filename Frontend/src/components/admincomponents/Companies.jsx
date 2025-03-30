@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../components_lite/Navbar';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -6,11 +6,22 @@ import { Plus } from 'lucide-react';
 import CompanyTable from './CompanyTable';
 import { useNavigate } from 'react-router-dom';
 import useGetAllComapnies from '@/hooks/useGetAllComapnies';
-
+import { useDispatch } from 'react-redux';
+import { setSearchCompanyByText } from '@/redux/companySlice';
 const Companies = () => {
 
     const navigate = useNavigate();
+
     useGetAllComapnies();
+
+    const [input,setInput] =useState();
+    const dispatch= useDispatch();
+
+
+    useEffect(()=>{
+      dispatch(setSearchCompanyByText(input));
+    },[input])
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -32,12 +43,12 @@ const Companies = () => {
         </div>
 
         {/* Search and Filter Section */}
-        {/* <div className="bg-white rounded-lg shadow p-4 mb-6"> */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div className="w-full sm:w-96">
               <Input 
                 placeholder="Search companies..." 
                 className="w-full"
+                onChange={(e)=>setInput(e.target.value)}
               />
             </div>
             {/* <div className="flex gap-2">
