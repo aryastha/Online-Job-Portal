@@ -12,51 +12,53 @@ import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Edit2, MoreHorizontal, Globe, MapPin } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { useSelector } from "react-redux";
 
 const CompanyTable = () => {
-  // Static data matching your MongoDB schema
-  const companies = [
-    {
-      _id: "1",
-      name: "TechNova Solutions",
-      description: "Innovative software development company specializing in AI solutions",
-      website: "https://technova.com",
-      location: "San Francisco, CA",
-      logo: "",
-      createdAt: "2023-05-15T10:00:00Z",
-      userId: ["user1"]
-    },
-    {
-      _id: "2",
-      name: "GreenEarth Organics",
-      description: "Sustainable organic food production and distribution",
-      website: "https://greenearth.org",
-      location: "Portland, OR",
-      logo: "https://example.com/logos/greenearth.png",
-      createdAt: "2023-02-20T14:30:00Z",
-      userId: ["user2"]
-    },
-    {
-      _id: "3",
-      name: "UrbanSpace Design",
-      description: "Modern architectural firm focused on urban spaces",
-      website: "",
-      location: "New York, NY",
-      logo: "",
-      createdAt: "2023-07-01T09:15:00Z",
-      userId: ["user3", "user4"]
-    },
-    {
-      _id: "4",
-      name: "HealthPlus Medical",
-      description: "Healthcare provider with nationwide clinics",
-      website: "https://healthplus.net",
-      location: "Chicago, IL",
-      logo: "",
-      createdAt: "2023-01-10T16:45:00Z",
-      userId: ["user5"]
-    }
-  ];
+
+  const {companies} = useSelector((store)=> store.company);
+  // const companies = [
+  //   {
+  //     _id: "1",
+  //     name: "TechNova Solutions",
+  //     description: "Innovative software development company specializing in AI solutions",
+  //     website: "https://technova.com",
+  //     location: "San Francisco, CA",
+  //     logo: "",
+  //     createdAt: "2023-05-15T10:00:00Z",
+  //     userId: ["user1"]
+  //   },
+  //   {
+  //     _id: "2",
+  //     name: "GreenEarth Organics",
+  //     description: "Sustainable organic food production and distribution",
+  //     website: "https://greenearth.org",
+  //     location: "Portland, OR",
+  //     logo: "https://example.com/logos/greenearth.png",
+  //     createdAt: "2023-02-20T14:30:00Z",
+  //     userId: ["user2"]
+  //   },
+  //   {
+  //     _id: "3",
+  //     name: "UrbanSpace Design",
+  //     description: "Modern architectural firm focused on urban spaces",
+  //     website: "",
+  //     location: "New York, NY",
+  //     logo: "",
+  //     createdAt: "2023-07-01T09:15:00Z",
+  //     userId: ["user3", "user4"]
+  //   },
+  //   {
+  //     _id: "4",
+  //     name: "HealthPlus Medical",
+  //     description: "Healthcare provider with nationwide clinics",
+  //     website: "https://healthplus.net",
+  //     location: "Chicago, IL",
+  //     logo: "",
+  //     createdAt: "2023-01-10T16:45:00Z",
+  //     userId: ["user5"]
+  //   }
+  // ];
 
   return (
     <Table className="min-w-full">
@@ -81,6 +83,8 @@ const CompanyTable = () => {
         </TableRow>
       </TableHeader>
       <TableBody>
+
+        {/* Company Data */}
         {companies.map((company) => (
           <TableRow key={company._id} className="hover:bg-gray-50">
             {/* Logo */}

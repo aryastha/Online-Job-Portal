@@ -7,6 +7,8 @@ import userRoute from './routes/user.routes.js';
 import companyRoute from './routes/company.routes.js';
 import jobRoute from './routes/job.routes.js';
 import applicationRoute from './routes/application.routes.js';
+import resumeRoutes from './routes/resume.routes.js';
+
 
 dotenv.config({});
 
@@ -28,6 +30,8 @@ app.use("/api/user", userRoute);
 app.use("/api/company", companyRoute);
 app.use("/api/job", jobRoute);
 app.use("/api/application", applicationRoute);
+app.use('/api/resumes', resumeRoutes);
+
 
 const PORT = process.env.PORT || 5003;
 app.listen(PORT,()=>{

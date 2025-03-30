@@ -51,6 +51,7 @@ const Navbar = () => {
         {/* Navigation Links */}
         <div className="flex items-center gap-8">
           <ul className="flex font-medium gap-6 items-center text-[#2C3E50]">
+            {/* User Role */}
             {user && user.role === "Recruiter" ? (
               <>
                 <li>
@@ -94,6 +95,16 @@ const Navbar = () => {
                     className="hover:text-[#E67E22] transition-all duration-300 text-base"
                   >
                     Jobs
+                  </Link>
+                </li>
+                {/* Resume */}
+                
+                <li>
+                  <Link
+                    to="/resume/create"
+                    className="hover:text-[#E67E22] transition-all duration-300 text-base"
+                  >
+                    Resume Builder
                   </Link>
                 </li>
               </>

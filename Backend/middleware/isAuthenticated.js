@@ -12,19 +12,38 @@ const authenticateToken = (req, res, next) =>{
             json({message: " Token is not provided", success: false});
         }
         console.log(token);
+
+        // verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        if (!decoded){
-            return res
-            .status(401)
-            .json({message:"Invalid Token", success: false});
+        // if (!decoded){
+        //     return res
+        //     .status(401)
+        //     .json({message:"Invalid Token", success: false});
+        // }
+
+        if (!decoded?.userId) {
+            return res.status(401).json({
+                message: "Invalid Token", 
+                success: false
+            });
         }
 
         req.id = decoded.userId;
+
+        req.user = {             // Add new standard property
+            _id: decoded.userId,
+        };
         next();
 
-    }catch(error){
-        res.status(401).json({message: "Invalid Token Server Error"});
+    } catch (error) {
+        console.error('Auth error:', error);
+        res.status(401).json({
+            message: error.name === 'JsonWebTokenError' 
+                   ? "Invalid Token" 
+                   : "Authentication Failed",
+            success: false
+        });
     }
 }
 

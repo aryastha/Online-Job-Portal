@@ -3,7 +3,7 @@ import authReducer from "./authSlice";
 import jobSlice from "./jobSlice";
 import jobReducer from './jobSlice'
 import { companySlice } from "./companySlice";
-
+import companyReducer from "./companySlice"
 // import { createRoot } from "react-dom/client";
 // import {
 //   persistStore,
@@ -45,6 +45,8 @@ const store = configureStore({
     job: jobSlice,
     jobs:jobReducer,
     company: companySlice,
+    company: companyReducer,
+    
   }
 
 });

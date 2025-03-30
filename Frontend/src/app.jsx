@@ -10,6 +10,7 @@ import Profile from './components/components_lite/Profile.jsx'
 import Companies from './components/admincomponents/Companies.jsx'
 import CompanyCreate from './components/admincomponents/CompanyCreate.jsx'
 import CompanySetup from './components/admincomponents/CompanySetup.jsx'
+import ResumeBuilderPage from './components/components_lite/ResumeBuilderPage.jsx';
 
 const appRouter = createBrowserRouter([
   {
@@ -33,6 +34,9 @@ const appRouter = createBrowserRouter([
   {
     path: '/description/:id', element: <Description />
   },
+  {
+    path: '/resume/create', element: <ResumeBuilderPage />
+  },
   //admin
   {
     path:"/admin/companies",element: <Companies />
@@ -42,7 +46,7 @@ const appRouter = createBrowserRouter([
   },
   {
     path:"/admin/companies/:id", element: <CompanySetup />
-  }
+  },
  
 ]);
 

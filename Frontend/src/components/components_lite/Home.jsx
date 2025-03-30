@@ -7,6 +7,7 @@ import Footer from './Footer';
 import useGetAllJobs from '@/hooks/useGetAllJobs';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import ResumeBuilder from './ResumeBuilder';
 
 
 const Home = () => {
@@ -28,6 +29,7 @@ useEffect(()=>{
       <Header />
       <Categories />
       <LatestJobs />
+      <ResumeBuilder />
       <Footer />
     </div>
   )

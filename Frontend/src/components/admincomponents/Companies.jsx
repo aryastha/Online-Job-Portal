@@ -5,10 +5,12 @@ import { Button } from '../ui/button';
 import { Plus } from 'lucide-react';
 import CompanyTable from './CompanyTable';
 import { useNavigate } from 'react-router-dom';
+import useGetAllComapnies from '@/hooks/useGetAllComapnies';
 
 const Companies = () => {
 
     const navigate = useNavigate();
+    useGetAllComapnies();
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
