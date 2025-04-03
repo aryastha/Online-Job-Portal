@@ -7,9 +7,9 @@ import authenticateToken from '../middleware/isAuthenticated.js'; // Updated imp
 const router = express.Router();
 
 router.post('/', 
-  authenticateToken,
-  singleUpload,
-  createResume
+  authenticateToken, //only logged-user can create resumes
+  singleUpload, 
+  createResume      //calls the fucntion
 );
 
 export default router;

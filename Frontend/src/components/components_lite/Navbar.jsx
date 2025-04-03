@@ -56,7 +56,7 @@ const Navbar = () => {
               <>
                 <li>
                   <Link
-                    to="/admin/companies"
+                    to="/admin/jobs"
                     className="hover:text-[#E67E22] transition-all duration-300 text-base"
                   >
                     Jobs
@@ -64,7 +64,7 @@ const Navbar = () => {
                 </li>
                 <li>
                   <Link
-                    to="admin/jobs"
+                    to="admin/companies"
                     className="hover:text-[#E67E22] transition-all duration-300 text-base"
                   >
                     Companies

@@ -11,6 +11,7 @@ import axios from 'axios';
 import { RESUMES_API_ENDPOINT } from '@/utils/data';
 
 const ResumeBuilderPage = () => {
+  //form data stores user information
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -26,12 +27,13 @@ const ResumeBuilderPage = () => {
   const [loading, setLoading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const navigate = useNavigate();
-
+  
+  //updates the state when user types in input fields.
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
-
+  //update photo
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -46,12 +48,14 @@ const ResumeBuilderPage = () => {
 
       setFormData(prev => ({ ...prev, photo: file }));
       
+      //Preview the photo
       const reader = new FileReader();
       reader.onloadend = () => setPhotoPreview(reader.result);
       reader.readAsDataURL(file);
     }
   };
 
+  //remove the photo
   const removePhoto = () => {
     setFormData(prev => ({ ...prev, photo: null }));
     setPhotoPreview('');
@@ -68,14 +72,7 @@ const ResumeBuilderPage = () => {
     setDownloadProgress(0);
 
     try {
-      const formDataToSend = new FormData();
-      // for (const key in formData) {
-      //   if (formData[key] !== null) {
-      //     formDataToSend.append(key, formData[key]);
-      //   }
-      // }
-
-       // Append all text fields as before
+      const formDataToSend = new FormData();   
     formDataToSend.append('fullName', formData.fullName);
     formDataToSend.append('email', formData.email);
     formDataToSend.append('phone', formData.phone);
@@ -84,9 +81,9 @@ const ResumeBuilderPage = () => {
     formDataToSend.append('experience', formData.experience);
     formDataToSend.append('skills', formData.skills);
     
-    // CHANGE THIS - Append photo with field name 'file' instead of 'photo'
+    //to append the photo save as a file
     if (formData.photo) {
-      formDataToSend.append('file', formData.photo); // Changed from 'photo' to 'file'
+      formDataToSend.append('file', formData.photo); 
     }
 
 

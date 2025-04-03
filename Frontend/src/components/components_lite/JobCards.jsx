@@ -1,13 +1,14 @@
 import React from "react";
 import { Badge } from "../ui/badge";
 import { Briefcase, MapPin, DollarSign, Users } from "lucide-react";
-const JobCards = ({job}) => {
-
+const JobCards = ({ job }) => {
   return (
     <div className="p-6 shadow-md border border-gray-300 bg-white rounded-lg cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300">
       {/* Company Info */}
       <div className="mb-4">
-        <h1 className="font-semibold text-lg text-gray-800">{job.company.name}</h1>
+        <h1 className="font-semibold text-lg text-gray-800">
+          {job.company?.name || "Unknown Company"}
+        </h1>
         <p className="text-xs text-gray-500 flex items-center gap-1">
           <MapPin size={14} className="text-gray-400" /> Nepal
         </p>

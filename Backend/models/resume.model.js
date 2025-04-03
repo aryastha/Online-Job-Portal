@@ -3,13 +3,13 @@ import mongoose from 'mongoose';
 const resumeSchema = new mongoose.Schema({
   user: { 
     type: mongoose.Schema.Types.ObjectId, 
-    ref: 'User',
+    ref: 'User',   //links each resume to the user
     required: true 
   },
   fullName: { type: String, required: true },
   email: { type: String, required: true },
-  photoUrl: String,
-  photoPublicId: String,
+  photoUrl: String,     //Cloudinary photo url
+  photoPublicId: String,   //Cloudinary photo public
   skills: [String],
   experience: String,
   education: String,

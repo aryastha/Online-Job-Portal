@@ -5,7 +5,7 @@ import { generatePDF } from '../utils/pdfGenerator.js';
 
 export const createResume = async (req, res) => {
   try {
-    // 1. Validate required fields
+    //Validate required fields
     const file = req.file;
     const requiredFields = ['fullName', 'email', 'skills', 'experience', 'education'];
     const missingFields = requiredFields.filter(field => !req.body[field]);
@@ -17,7 +17,7 @@ export const createResume = async (req, res) => {
       });
     }
 
-    // 2. Process photo upload (if exists)
+    //Process photo upload (if exists)
     let photoUrl, photoPublicId;
     if (req.file) {
       try {
@@ -38,14 +38,14 @@ export const createResume = async (req, res) => {
       }
     }
 
-    // 3. Create resume document
+    //Create resume document in the database
     const resumeData = {
       user: req.user._id,
       fullName: req.body.fullName.trim(),
       email: req.body.email.trim(),
       photoUrl,
       photoPublicId,
-      skills: req.body.skills.split(',').map(s => s.trim()).filter(s => s),
+      skills: req.body.skills.split(',').map(s => s.trim()).filter(s => s), //skills form comma separated to the string of array
       experience: req.body.experience.trim(),
       education: req.body.education.trim(),
       summary: req.body.summary?.trim() || ''
@@ -53,7 +53,7 @@ export const createResume = async (req, res) => {
 
     const resume = await Resume.create(resumeData);
 
-    // 4. Generate PDF
+    // enerate PDF
     let pdfBuffer;
     try {
       pdfBuffer = await generatePDF(resume.toObject());
@@ -72,9 +72,10 @@ export const createResume = async (req, res) => {
       });
     }
 
-    // 5. Send PDF response
+    //Send PDF response
     const sanitizedFilename = resumeData.fullName.replace(/[^a-zA-Z0-9-_]/g, '_');
     
+    //set the response header for download file
     res
       .setHeader('Content-Type', 'application/pdf')
       .setHeader('Content-Disposition', `attachment; filename="${sanitizedFilename}_Resume.pdf"`)
