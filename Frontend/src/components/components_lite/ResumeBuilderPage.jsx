@@ -1,53 +1,53 @@
-import React, { useState, useRef } from 'react';
-import Navbar from './Navbar';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Textarea } from '../ui/textarea';
-import { useNavigate } from 'react-router-dom';
-import { Loader2, ArrowLeft, Upload, X } from 'lucide-react';
-import { toast } from 'sonner';
-import axios from 'axios';
-import { RESUMES_API_ENDPOINT } from '@/utils/data';
+import React, { useState, useRef } from "react";
+import Navbar from "./Navbar";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Textarea } from "../ui/textarea";
+import { useNavigate } from "react-router-dom";
+import { Loader2, ArrowLeft, Upload, X } from "lucide-react";
+import { toast } from "sonner";
+import axios from "axios";
+import { RESUMES_API_ENDPOINT } from "@/utils/data";
 
 const ResumeBuilderPage = () => {
   //form data stores user information
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    summary: '',
-    education: '',
-    experience: '',
-    skills: '',
-    photo: null
+    fullName: "",
+    email: "",
+    phone: "",
+    summary: "",
+    education: "",
+    experience: "",
+    skills: "",
+    photo: null,
   });
-  const [photoPreview, setPhotoPreview] = useState('');
+  const [photoPreview, setPhotoPreview] = useState("");
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const navigate = useNavigate();
-  
+
   //updates the state when user types in input fields.
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
   //update photo
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (!file.type.match('image.*')) {
-        toast.error('Please select an image file');
+      if (!file.type.match("image.*")) {
+        toast.error("Please select an image file");
         return;
       }
       if (file.size > 2 * 1024 * 1024) {
-        toast.error('Image size should be less than 2MB');
+        toast.error("Image size should be less than 2MB");
         return;
       }
 
-      setFormData(prev => ({ ...prev, photo: file }));
-      
+      setFormData((prev) => ({ ...prev, photo: file }));
+
       //Preview the photo
       const reader = new FileReader();
       reader.onloadend = () => setPhotoPreview(reader.result);
@@ -57,14 +57,14 @@ const ResumeBuilderPage = () => {
 
   //remove the photo
   const removePhoto = () => {
-    setFormData(prev => ({ ...prev, photo: null }));
-    setPhotoPreview('');
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    setFormData((prev) => ({ ...prev, photo: null }));
+    setPhotoPreview("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleSubmit = async () => {
     if (!formData.fullName) {
-      toast.error('Please enter your full name');
+      toast.error("Please enter your full name");
       return;
     }
 
@@ -72,47 +72,58 @@ const ResumeBuilderPage = () => {
     setDownloadProgress(0);
 
     try {
-      const formDataToSend = new FormData();   
-    formDataToSend.append('fullName', formData.fullName);
-    formDataToSend.append('email', formData.email);
-    formDataToSend.append('phone', formData.phone);
-    formDataToSend.append('summary', formData.summary);
-    formDataToSend.append('education', formData.education);
-    formDataToSend.append('experience', formData.experience);
-    formDataToSend.append('skills', formData.skills);
-    
-    //to append the photo save as a file
-    if (formData.photo) {
-      formDataToSend.append('file', formData.photo); 
-    }
+      const formDataToSend = new FormData();
+      formDataToSend.append("fullName", formData.fullName);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("phone", formData.phone);
+      formDataToSend.append("summary", formData.summary);
+      formDataToSend.append("education", formData.education);
+      formDataToSend.append("experience", formData.experience);
+      formDataToSend.append("skills", formData.skills);
 
+      //to append the photo save as a file
+      if (formData.photo) {
+        formDataToSend.append("file", formData.photo);
+      }
 
-      const response = await axios.post(`${RESUMES_API_ENDPOINT}/`, formDataToSend, { 
-        responseType: 'blob',
-        headers: { 'Content-Type': 'multipart/form-data' ,
-        },
-        withCredentials: true,
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setDownloadProgress(percentCompleted);
+      const response = await axios.post(
+        `${RESUMES_API_ENDPOINT}/`,
+        formDataToSend,
+        {
+          responseType: "blob",
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Accept: "application/pdf",
+          },
+          withCredentials: true,
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setDownloadProgress(percentCompleted);
+          },
         }
-      });
+      );
 
       // Extract filename from headers or use default
-      const contentDisposition = response.headers['content-disposition'];
-      let filename = 'resume.pdf';
+      const contentDisposition = response.headers["content-disposition"];
+      let filename = "resume.pdf";
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
         if (filenameMatch) filename = filenameMatch[1];
       }
 
       // Create download link
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const url = window.URL.createObjectURL(
+        new Blob([response.data], {
+          type: "application/pdf", // Explicitly set blob type
+        })
+      );
+
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', filename);
+      link.setAttribute("download", filename);
+      link.style.display = "none";
       document.body.appendChild(link);
       link.click();
 
@@ -122,32 +133,35 @@ const ResumeBuilderPage = () => {
         window.URL.revokeObjectURL(url);
         setLoading(false);
         setDownloadProgress(0);
-        toast.success('Resume downloaded successfully!');
+        toast.success("Resume downloaded successfully!");
       }, 100);
-
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
       toast.error(
-        error.response?.data?.message || 
-        'Failed to generate resume. Please try again.'
+        error.response?.data?.message ||
+          "Failed to generate resume. Please try again."
       );
+
+      console.log("Response data:", response.data); // Should show a Blob object
+      console.log("Blob type:", response.data.type); // Should be "application/pdf"
+
       setLoading(false);
       setDownloadProgress(0);
 
       // Improved error handling
-    if (error.response) {
-      if (error.response.status === 401) {
-        toast.error('Please login to generate a resume');
-        navigate('/login');  // Redirect to login if unauthorized
+      if (error.response) {
+        if (error.response.status === 401) {
+          toast.error("Please login to generate a resume");
+          navigate("/login"); // Redirect to login if unauthorized
+        } else {
+          toast.error(
+            error.response.data?.message ||
+              "Failed to generate resume. Please try again."
+          );
+        }
       } else {
-        toast.error(
-          error.response.data?.message || 
-          'Failed to generate resume. Please try again.'
-        );
+        toast.error("Network error. Please check your connection.");
       }
-    } else {
-      toast.error('Network error. Please check your connection.');
-    }
     }
   };
 
@@ -156,8 +170,8 @@ const ResumeBuilderPage = () => {
       <Navbar />
       <div className="max-w-4xl mx-auto py-8 px-4">
         <div className="flex items-center gap-4 mb-8">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
             className="text-[#2C3E50] hover:bg-[#E67E22]/10"
@@ -174,9 +188,9 @@ const ResumeBuilderPage = () => {
             <div className="flex items-center gap-4">
               {photoPreview ? (
                 <div className="relative">
-                  <img 
-                    src={photoPreview} 
-                    alt="Preview" 
+                  <img
+                    src={photoPreview}
+                    alt="Preview"
                     className="h-24 w-24 rounded-full object-cover border-2 border-[#E67E22]/30"
                   />
                   <button
@@ -201,14 +215,16 @@ const ResumeBuilderPage = () => {
                   className="hidden"
                   id="photo-upload"
                 />
-                <Label 
-                  htmlFor="photo-upload" 
+                <Label
+                  htmlFor="photo-upload"
                   className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-[#E67E22]/10 text-[#E67E22] rounded-md hover:bg-[#E67E22]/20"
                 >
                   <Upload className="h-4 w-4" />
-                  {photoPreview ? 'Change Photo' : 'Upload Photo'}
+                  {photoPreview ? "Change Photo" : "Upload Photo"}
                 </Label>
-                <p className="text-xs text-gray-500 mt-1">JPG or PNG, max 2MB</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  JPG or PNG, max 2MB
+                </p>
               </div>
             </div>
           </div>
@@ -282,8 +298,8 @@ const ResumeBuilderPage = () => {
           {/* Progress Bar */}
           {downloadProgress > 0 && downloadProgress < 100 && (
             <div className="w-full bg-gray-200 rounded-full h-2.5">
-              <div 
-                className="bg-[#E67E22] h-2.5 rounded-full" 
+              <div
+                className="bg-[#E67E22] h-2.5 rounded-full"
                 style={{ width: `${downloadProgress}%` }}
               ></div>
             </div>
@@ -293,7 +309,7 @@ const ResumeBuilderPage = () => {
           <div className="flex justify-end gap-4 pt-4">
             <Button
               variant="outline"
-              onClick={() => navigate('/profile')}
+              onClick={() => navigate("/profile")}
               className="border-[#2C3E50] text-[#2C3E50]"
             >
               Cancel
@@ -309,7 +325,7 @@ const ResumeBuilderPage = () => {
                   {downloadProgress}%
                 </>
               ) : (
-                'Save & Download'
+                "Save & Download"
               )}
             </Button>
           </div>
