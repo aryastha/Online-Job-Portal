@@ -89,8 +89,8 @@ const ResumeBuilderPage = () => {
 
       const response = await axios.post(`${RESUMES_API_ENDPOINT}/`, formDataToSend, { 
         responseType: 'blob',
-        // headers: { 'Content-Type': 'multipart/form-data' ,
-        // },
+        headers: { 'Content-Type': 'multipart/form-data' ,
+        },
         withCredentials: true,
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round(

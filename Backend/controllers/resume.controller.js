@@ -7,6 +7,15 @@ export const createResume = async (req, res) => {
   try {
     //Validate required fields
     const file = req.file;
+
+
+    if (!req.file) {
+      console.log('No file received');
+    } else {
+      console.log('File received:', req.file);
+    }
+
+    
     const requiredFields = ['fullName', 'email', 'skills', 'experience', 'education'];
     const missingFields = requiredFields.filter(field => !req.body[field]);
     
