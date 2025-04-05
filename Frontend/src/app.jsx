@@ -12,6 +12,7 @@ import CompanyCreate from './components/admincomponents/CompanyCreate.jsx'
 import CompanySetup from './components/admincomponents/CompanySetup.jsx'
 import ResumeBuilderPage from './components/components_lite/ResumeBuilderPage.jsx';
 import AdminJobs from './components/admincomponents/AdminJobs.jsx'
+import PostJob from './components/admincomponents/PostJob'
 
 const appRouter = createBrowserRouter([
   {
@@ -50,6 +51,9 @@ const appRouter = createBrowserRouter([
   },
   {
     path:"/admin/jobs", element: <AdminJobs />
+  },
+  {
+    path:"/admin/jobs/create", element: <PostJob />
   },
  
 ]);
