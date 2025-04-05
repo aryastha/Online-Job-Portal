@@ -14,13 +14,7 @@ export const createResume = async (req, res) => {
       console.log("File received:", req.file);
     }
 
-    const requiredFields = [
-      "fullName",
-      "email",
-      "skills",
-      "experience",
-      "education",
-    ];
+    const requiredFields = ["fullName", "email", "skills"];
     const missingFields = requiredFields.filter((field) => !req.body[field]);
 
     if (missingFields.length > 0) {
@@ -29,6 +23,14 @@ export const createResume = async (req, res) => {
         error: `Missing required fields: ${missingFields.join(", ")}`,
       });
     }
+
+    // Process work experiences and educations
+    const workExperiences = req.body.workExperiences
+      ? JSON.parse(req.body.workExperiences)
+      : [];
+    const educations = req.body.educations
+      ? JSON.parse(req.body.educations)
+      : [];
 
     //Process photo upload (if exists)
     let photoUrl, photoPublicId;
@@ -62,9 +64,9 @@ export const createResume = async (req, res) => {
         .split(",")
         .map((s) => s.trim())
         .filter((s) => s), //skills form comma separated to the string of array
-      experience: req.body.experience.trim(),
-      education: req.body.education.trim(),
       summary: req.body.summary?.trim() || "",
+      workExperiences, // Store structured data
+      educations, // Store structured data
     };
 
     const resume = await Resume.create(resumeData);
@@ -125,7 +127,6 @@ export const createResume = async (req, res) => {
     console.log("PDF Buffer:", pdfBuffer); // Should show a Buffer object
     console.log("Content Length:", pdfBuffer.length); // Should be > 0
 
-    
     res.status(500).json({
       success: false,
       error:

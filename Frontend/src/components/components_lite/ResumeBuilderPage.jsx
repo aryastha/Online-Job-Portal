@@ -5,35 +5,138 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { useNavigate } from "react-router-dom";
-import { Loader2, ArrowLeft, Upload, X } from "lucide-react";
+import { Loader2, ArrowLeft, Upload, X, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import { RESUMES_API_ENDPOINT } from "@/utils/data";
 
 const ResumeBuilderPage = () => {
-  //form data stores user information
+  // Form data structure
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     phone: "",
     summary: "",
-    education: "",
-    experience: "",
-    skills: "",
+    skills: [],
     photo: null,
   });
+
+  const [workExperiences, setWorkExperiences] = useState([
+    {
+      id: Date.now(),
+      company: "",
+      position: "",
+      startDate: "",
+      endDate: "",
+      description: "",
+      current: false,
+    },
+  ]);
+
+  const [educations, setEducations] = useState([
+    {
+      id: Date.now(),
+      institution: "",
+      degree: "",
+      fieldOfStudy: "",
+      startDate: "",
+      endDate: "",
+      achievements: "",
+    },
+  ]);
+
+  const [skillInput, setSkillInput] = useState("");
   const [photoPreview, setPhotoPreview] = useState("");
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const navigate = useNavigate();
 
-  //updates the state when user types in input fields.
+  // Handle basic form changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  //update photo
+
+  // Work Experience Handlers
+  const handleWorkExperienceChange = (id, field, value) => {
+    setWorkExperiences((prev) =>
+      prev.map((exp) => (exp.id === id ? { ...exp, [field]: value } : exp))
+    );
+  };
+
+  const addWorkExperience = () => {
+    setWorkExperiences((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        company: "",
+        position: "",
+        startDate: "",
+        endDate: "",
+        description: "",
+        current: false,
+      },
+    ]);
+  };
+
+  const removeWorkExperience = (id) => {
+    if (workExperiences.length > 1) {
+      setWorkExperiences((prev) => prev.filter((exp) => exp.id !== id));
+    } else {
+      toast.info("You need at least one work experience entry");
+    }
+  };
+
+  // Education Handlers
+  const handleEducationChange = (id, field, value) => {
+    setEducations((prev) =>
+      prev.map((edu) => (edu.id === id ? { ...edu, [field]: value } : edu))
+    );
+  };
+
+  const addEducation = () => {
+    setEducations((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        institution: "",
+        degree: "",
+        fieldOfStudy: "",
+        startDate: "",
+        endDate: "",
+        achievements: "",
+      },
+    ]);
+  };
+
+  const removeEducation = (id) => {
+    if (educations.length > 1) {
+      setEducations((prev) => prev.filter((edu) => edu.id !== id));
+    } else {
+      toast.info("You need at least one education entry");
+    }
+  };
+
+  // Skills Handlers
+  const handleSkillAdd = () => {
+    if (skillInput.trim() && !formData.skills.includes(skillInput.trim())) {
+      setFormData((prev) => ({
+        ...prev,
+        skills: [...prev.skills, skillInput.trim()],
+      }));
+      setSkillInput("");
+    }
+  };
+
+  const handleSkillRemove = (skillToRemove) => {
+    setFormData((prev) => ({
+      ...prev,
+      skills: prev.skills.filter((skill) => skill !== skillToRemove),
+    }));
+  };
+
+  // Photo Handlers
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -48,20 +151,19 @@ const ResumeBuilderPage = () => {
 
       setFormData((prev) => ({ ...prev, photo: file }));
 
-      //Preview the photo
       const reader = new FileReader();
       reader.onloadend = () => setPhotoPreview(reader.result);
       reader.readAsDataURL(file);
     }
   };
 
-  //remove the photo
   const removePhoto = () => {
     setFormData((prev) => ({ ...prev, photo: null }));
     setPhotoPreview("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  // Submit Handler (updated to handle new structure)
   const handleSubmit = async () => {
     if (!formData.fullName) {
       toast.error("Please enter your full name");
@@ -77,11 +179,13 @@ const ResumeBuilderPage = () => {
       formDataToSend.append("email", formData.email);
       formDataToSend.append("phone", formData.phone);
       formDataToSend.append("summary", formData.summary);
-      formDataToSend.append("education", formData.education);
-      formDataToSend.append("experience", formData.experience);
-      formDataToSend.append("skills", formData.skills);
 
-      //to append the photo save as a file
+      // Append arrays as JSON strings
+      formDataToSend.append("skills", JSON.stringify(formData.skills));
+      formDataToSend.append("workExperiences", JSON.stringify(workExperiences));
+      formDataToSend.append("educations", JSON.stringify(educations));
+
+      //Append the photo if exists
       if (formData.photo) {
         formDataToSend.append("file", formData.photo);
       }
@@ -105,7 +209,7 @@ const ResumeBuilderPage = () => {
         }
       );
 
-      // Extract filename from headers or use default
+      //handle the pdf download
       const contentDisposition = response.headers["content-disposition"];
       let filename = "resume.pdf";
       if (contentDisposition) {
@@ -113,11 +217,8 @@ const ResumeBuilderPage = () => {
         if (filenameMatch) filename = filenameMatch[1];
       }
 
-      // Create download link
       const url = window.URL.createObjectURL(
-        new Blob([response.data], {
-          type: "application/pdf", // Explicitly set blob type
-        })
+        new Blob([response.data], { type: "application/pdf" })
       );
 
       const link = document.createElement("a");
@@ -127,7 +228,6 @@ const ResumeBuilderPage = () => {
       document.body.appendChild(link);
       link.click();
 
-      // Cleanup
       setTimeout(() => {
         link.remove();
         window.URL.revokeObjectURL(url);
@@ -141,27 +241,8 @@ const ResumeBuilderPage = () => {
         error.response?.data?.message ||
           "Failed to generate resume. Please try again."
       );
-
-      console.log("Response data:", response.data); // Should show a Blob object
-      console.log("Blob type:", response.data.type); // Should be "application/pdf"
-
       setLoading(false);
       setDownloadProgress(0);
-
-      // Improved error handling
-      if (error.response) {
-        if (error.response.status === 401) {
-          toast.error("Please login to generate a resume");
-          navigate("/login"); // Redirect to login if unauthorized
-        } else {
-          toast.error(
-            error.response.data?.message ||
-              "Failed to generate resume. Please try again."
-          );
-        }
-      } else {
-        toast.error("Network error. Please check your connection.");
-      }
     }
   };
 
@@ -229,7 +310,7 @@ const ResumeBuilderPage = () => {
             </div>
           </div>
 
-          {/* Form Fields */}
+          {/* Personal Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label className="text-[#2C3E50]">Full Name *</Label>
@@ -250,8 +331,18 @@ const ResumeBuilderPage = () => {
                 required
               />
             </div>
+            <div>
+              <Label className="text-[#2C3E50]">Phone</Label>
+              <Input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+              />
+            </div>
           </div>
 
+          {/* Professional Summary */}
           <div>
             <Label className="text-[#2C3E50]">Professional Summary</Label>
             <Textarea
@@ -259,54 +350,291 @@ const ResumeBuilderPage = () => {
               value={formData.summary}
               onChange={handleChange}
               rows={4}
-              placeholder="Briefly describe your professional background and skills"
+              placeholder="Briefly describe your professional background, skills, and achievements"
             />
           </div>
 
+          {/* Work Experience Section */}
           <div>
-            <Label className="text-[#2C3E50]">Work Experience</Label>
-            <Textarea
-              name="experience"
-              value={formData.experience}
-              onChange={handleChange}
-              rows={4}
-              placeholder="Include your job history with company names, positions, and dates"
-            />
+            <div className="flex justify-between items-center mb-4">
+              <Label className="text-[#2C3E50] text-lg">Work Experience</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addWorkExperience}
+                className="flex items-center gap-1"
+              >
+                <Plus className="h-4 w-4" /> Add Experience
+              </Button>
+            </div>
+
+            {workExperiences.map((exp, index) => (
+              <div key={exp.id} className="mb-6 p-4 border rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <Label>Company *</Label>
+                    <Input
+                      value={exp.company}
+                      onChange={(e) =>
+                        handleWorkExperienceChange(
+                          exp.id,
+                          "company",
+                          e.target.value
+                        )
+                      }
+                      placeholder="Company name"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Position *</Label>
+                    <Input
+                      value={exp.position}
+                      onChange={(e) =>
+                        handleWorkExperienceChange(
+                          exp.id,
+                          "position",
+                          e.target.value
+                        )
+                      }
+                      placeholder="Your job title"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Start Date *</Label>
+                    <Input
+                      type="date"
+                      value={exp.startDate}
+                      onChange={(e) =>
+                        handleWorkExperienceChange(
+                          exp.id,
+                          "startDate",
+                          e.target.value
+                        )
+                      }
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>End Date</Label>
+                    <Input
+                      type="date"
+                      value={exp.endDate}
+                      onChange={(e) =>
+                        handleWorkExperienceChange(
+                          exp.id,
+                          "endDate",
+                          e.target.value
+                        )
+                      }
+                      disabled={exp.current}
+                    />
+                    <div className="flex items-center mt-2">
+                      <input
+                        type="checkbox"
+                        id={`current-${exp.id}`}
+                        checked={exp.current}
+                        onChange={(e) =>
+                          handleWorkExperienceChange(
+                            exp.id,
+                            "current",
+                            e.target.checked
+                          )
+                        }
+                        className="mr-2"
+                      />
+                      <Label htmlFor={`current-${exp.id}`}>
+                        I currently work here
+                      </Label>
+                    </div>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <Label>Description</Label>
+                  <Textarea
+                    value={exp.description}
+                    onChange={(e) =>
+                      handleWorkExperienceChange(
+                        exp.id,
+                        "description",
+                        e.target.value
+                      )
+                    }
+                    rows={3}
+                    placeholder="Describe your responsibilities and achievements"
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeWorkExperience(exp.id)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" /> Remove
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
 
+          {/* Education Section */}
           <div>
-            <Label className="text-[#2C3E50]">Education</Label>
-            <Textarea
-              name="education"
-              value={formData.education}
-              onChange={handleChange}
-              rows={3}
-              placeholder="List your degrees, certifications, and institutions"
-            />
+            <div className="flex justify-between items-center mb-4">
+              <Label className="text-[#2C3E50] text-lg">Education</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addEducation}
+                className="flex items-center gap-1"
+              >
+                <Plus className="h-4 w-4" /> Add Education
+              </Button>
+            </div>
+
+            {educations.map((edu, index) => (
+              <div key={edu.id} className="mb-6 p-4 border rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <Label>Institution *</Label>
+                    <Input
+                      value={edu.institution}
+                      onChange={(e) =>
+                        handleEducationChange(
+                          edu.id,
+                          "institution",
+                          e.target.value
+                        )
+                      }
+                      placeholder="School/University name"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Degree *</Label>
+                    <Input
+                      value={edu.degree}
+                      onChange={(e) =>
+                        handleEducationChange(edu.id, "degree", e.target.value)
+                      }
+                      placeholder="Degree/Certificate"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Field of Study</Label>
+                    <Input
+                      value={edu.fieldOfStudy}
+                      onChange={(e) =>
+                        handleEducationChange(
+                          edu.id,
+                          "fieldOfStudy",
+                          e.target.value
+                        )
+                      }
+                      placeholder="Major/Field"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Start Date</Label>
+                      <Input
+                        type="date"
+                        value={edu.startDate}
+                        onChange={(e) =>
+                          handleEducationChange(
+                            edu.id,
+                            "startDate",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label>End Date</Label>
+                      <Input
+                        type="date"
+                        value={edu.endDate}
+                        onChange={(e) =>
+                          handleEducationChange(
+                            edu.id,
+                            "endDate",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <Label>Achievements</Label>
+                  <Textarea
+                    value={edu.achievements}
+                    onChange={(e) =>
+                      handleEducationChange(
+                        edu.id,
+                        "achievements",
+                        e.target.value
+                      )
+                    }
+                    rows={2}
+                    placeholder="Honors, awards, or notable achievements"
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeEducation(edu.id)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" /> Remove
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
 
+          {/* Skills Section */}
           <div>
             <Label className="text-[#2C3E50]">Skills</Label>
-            <Input
-              name="skills"
-              value={formData.skills}
-              onChange={handleChange}
-              placeholder="Separate skills with commas (e.g., JavaScript, React, Project Management)"
-            />
+            <div className="flex flex-wrap gap-2 mb-2">
+              {formData.skills.map((skill, index) => (
+                <div
+                  key={index}
+                  className="flex items-center bg-gray-100 px-3 py-1 rounded-full"
+                >
+                  <span className="text-sm">{skill}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleSkillRemove(skill)}
+                    className="ml-2 text-gray-500 hover:text-red-500"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                value={skillInput}
+                onChange={(e) => setSkillInput(e.target.value)}
+                placeholder="Add a skill"
+                onKeyDown={(e) => e.key === "Enter" && handleSkillAdd()}
+              />
+              <Button type="button" variant="outline" onClick={handleSkillAdd}>
+                Add
+              </Button>
+            </div>
           </div>
 
-          {/* Progress Bar */}
-          {downloadProgress > 0 && downloadProgress < 100 && (
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
-              <div
-                className="bg-[#E67E22] h-2.5 rounded-full"
-                style={{ width: `${downloadProgress}%` }}
-              ></div>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-4 pt-4">
+          {/* Submit Section */}
+          <div className="flex justify-end gap-4 pt-6">
             <Button
               variant="outline"
               onClick={() => navigate("/profile")}
