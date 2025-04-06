@@ -7,6 +7,7 @@ import {
   MapPin,
   Calendar,
   Briefcase,
+  Eye,
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -100,11 +101,22 @@ const AdminJobsTable = () => {
                     <PopoverContent className="w-32">
                       <div
                         onClick={() => navigate(`/admin/companies/${job._id}`)}
-                        className="flex items-center gap-2 w-fit cursor-pointer"
+                        className="flex items-center gap-3 w-fit cursor-pointer"
                       >
                         <Edit2 className="w-4" />
                         <span>Edit</span>
                       </div>
+                      <hr className="mt-2"/>
+
+                      <div
+                        onClick={() => navigate(`/admin/jobs/${job._id}/applicants`)}
+                        className="flex items-center gap-3 w-fit cursor-pointer mt-2"
+                      >
+                        <Eye className="w-4" />
+                        <span>Applicants</span>
+                      </div>
+
+
                     </PopoverContent>
                   </Popover>
                 </TableCell>

@@ -121,7 +121,7 @@ const Description = (job) => {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               {singleJob?.title}
             </h1>
-            <p className="text-lg text-gray-600 mb-4">{singleJob?.position}</p>
+            <p className="text-lg text-gray-600 mb-4">Open Positions: {singleJob?.position}</p>
           </div>
           <div className="bg-[#E67E22]/10 px-4 py-2 rounded-lg">
             <span className="text-[#E67E22] font-semibold">
@@ -137,7 +137,7 @@ const Description = (job) => {
             {singleJob.location}
           </Badge>
           <Badge className="bg-gray-50 text-gray-700 hover:bg-gray-100 flex items-center gap-2 px-4 py-2 text-sm border border-gray-200 rounded-lg">
-            <DollarSign size={16} className="text-[#E67E22]" />
+            {/* <DollarSign size={16}  */}
             Rs: {singleJob?.salary}
           </Badge>
           <Badge className="bg-gray-50 text-gray-700 hover:bg-gray-100 flex items-center gap-2 px-4 py-2 text-sm border border-gray-200 rounded-lg">
@@ -192,7 +192,7 @@ const Description = (job) => {
                 <h3 className="font-semibold text-gray-900">
                   Experience Level
                 </h3>
-                <p className="text-gray-700">{singleJob?.experienceLevel}</p>
+                <p className="text-gray-700">{singleJob?.experienceLevel} {singleJob?.experienceLevel?.length !== 1 ? "years" : "year"}</p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">Salary</h3>

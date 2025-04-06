@@ -27,16 +27,16 @@ const JobCards = ({ job }) => {
       {/* Job Details - Badges (No Hover) */}
       <div className="flex flex-wrap gap-2 mt-4">
         <Badge className="bg-blue-100 text-blue-600 hover:bg-blue-100 hover:text-blue-600 flex items-center gap-1 px-2 py-1 text-xs">
-          <DollarSign size={12} /> {job.salary}
+          {/* <DollarSign size={12} /> */} NRS {job.salary} 
         </Badge>
         <Badge className="bg-green-100 text-green-600 hover:bg-green-100 hover:text-green-600 flex items-center gap-1 px-2 py-1 text-xs">
-          <Briefcase size={12} /> {job.position}
+          <Briefcase size={12} /> {job.position} 
         </Badge>
         <Badge className="bg-orange-100 text-orange-600 hover:bg-orange-100 hover:text-orange-600 flex items-center gap-1 px-2 py-1 text-xs">
-          <Users size={12} /> {job.location}
+          <Users size={12} /> {job.jobType}
         </Badge>
         <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100 hover:text-gray-700 flex items-center gap-1 px-2 py-1 text-xs">
-          <MapPin size={12} /> {job.jobType}
+          <MapPin size={12} /> {job.location}
         </Badge>
       </div>
     </div>

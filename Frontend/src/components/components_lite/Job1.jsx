@@ -54,7 +54,7 @@ const Job1 = ({ job }) => {
               </h1>
               <p className="text-sm text-gray-600 flex items-center gap-1">
                 <MapPin size={16} className="text-gray-500" /> Nepal
-              </p>
+              </p>  
             </div>
           </div>
         </div>
@@ -72,16 +72,16 @@ const Job1 = ({ job }) => {
         {/* Job Details - Badges */}
         <div className="flex flex-wrap gap-2 mb-6">
           <Badge className="bg-gray-50 text-gray-700 hover:bg-gray-100 flex items-center gap-1 px-3 py-1 text-sm border border-gray-200">
-            <DollarSign size={14} /> {job?.salary}
+            {/* <DollarSign size={14} />  */}NPR. {job?.salary}
           </Badge>
           <Badge className="bg-gray-50 text-gray-700 hover:bg-gray-100 flex items-center gap-1 px-3 py-1 text-sm border border-gray-200">
             <Briefcase size={14} /> {job?.position}
           </Badge>
           <Badge className="bg-gray-50 text-gray-700 hover:bg-gray-100 flex items-center gap-1 px-3 py-1 text-sm border border-gray-200">
-            <Users size={14} /> {job?.location}
+            <Users size={14} /> {job.jobType}
           </Badge>
           <Badge className="bg-gray-50 text-gray-700 hover:bg-gray-100 flex items-center gap-1 px-3 py-1 text-sm border border-gray-200">
-            <MapPin size={14} /> {job?.jobType}
+            <MapPin size={14} /> {job?.location}
           </Badge>
         </div>
 
