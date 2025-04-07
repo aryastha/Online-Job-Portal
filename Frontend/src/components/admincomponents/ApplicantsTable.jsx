@@ -1,83 +1,105 @@
 import React from "react";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import {
   Table,
+  TableBody,
   TableCaption,
+  TableCell,
+  TableHead,
   TableHeader,
   TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
 } from "../ui/table";
-import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
-import { MoreHorizontal } from "lucide-react";
 import { useSelector } from "react-redux";
+import { MoreHorizontal } from "lucide-react";
+import axios from "axios";
+import { APPLICATION_API_ENDPOINT } from "@/utils/data";
+import { toast } from "sonner";
 
-const shortLisitngStatus = ["Accepted", "Rejected"];
+const shortListingStatus = ["Accepted", "Rejected"];
 
 const ApplicantsTable = () => {
-    const {application} = useSelector((store)=> store.application)
+  const { applicants } = useSelector((store) => store.application);
+
+  const statusHandler = async(status, id) =>{
+    axios.defaults.withCredentials = true;
+    console.log("called");
+    try{
+      const res = await axios.post(`${APPLICATION_API_ENDPOINT}/status/${id}/update`,
+        {status}
+      );
+      console.log(res);
+      if (res.data.success) {
+        toast.success(res.data.message);
+      }
+    }catch (error) {
+      toast.error(error.response.data.message);
+    }
+  }
+
   return (
     <div>
-      <Table className="min-w-full divide-y divide-gray-200">
-        <TableCaption className="text-center px-6 py-3">
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium text-gray-600">
-              Show the latest applicants
-            </span>
-          </div>
-        </TableCaption>
-
-        <TableHeader className="bg-gray-50">
+      <Table>
+        <TableCaption>A list of your recent applied user</TableCaption>
+        <TableHeader>
           <TableRow>
-            <TableHead className="w-[60px]">Fullname</TableHead>
+            <TableHead>FullName</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Contact</TableHead>
-            <TableHead>Applied On</TableHead>
             <TableHead>Resume</TableHead>
-            <TableHead>Job Title</TableHead>
-            {/* <TableHead> Company</TableHead> */}
-            <TableHead className="text-right w-[50px]">Actions</TableHead>
+            <TableHead>Date</TableHead>
+            <TableHead className="text-right">Action</TableHead>
           </TableRow>
         </TableHeader>
 
-        <TableBody className="divide-y divide-gray-200">
-          <tr>
-            <TableCell> Fullname</TableCell>
-            <TableCell> Email</TableCell>
-            <TableCell> Contact</TableCell>
-            <TableCell> Applied On</TableCell>
-            <TableCell> Resume</TableCell>
-            <TableCell> Job Title</TableCell>
-            {/* <TableCell> Company</TableCell> */}
+        <TableBody>
+          {applicants &&
+            applicants?.applications?.map((item) => (
+              <tr key={item.id}>
+                <TableCell>{item?.applicant?.fullname}</TableCell>
+                <TableCell>{item?.applicant?.email}</TableCell>
+                <TableCell>{item?.applicant?.phoneNumber}</TableCell>
+                <TableCell>{item?.applicant?.profile?.resume?(
+                  <a
+                  className="text-blue-600 cursor-pointer"
+                  href= {item?.applicant?.profile?.resume}
+                  target= "_blank"
+                  rel="noopener noreferrer"
+                  >
+                    Download
+                  </a>
+                ):(
+                  <span> NA</span>
+                )}
+                </TableCell>
+                <TableCell>{item?.applicant?.createdAt.split("T")[0]}</TableCell>
+                <TableCell className="float-right cursor-pointer" >
+                  <Popover>
+                    <PopoverTrigger>
+                      <MoreHorizontal />
+                    </PopoverTrigger>
 
-            <TableCell className="text-right">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button className="p-2 rounded-md hover:bg-gray-100">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-40 p-2" align="end">
-                  {shortLisitngStatus.map((status, index) => {
-                    return (
-                      <div className="mt-2" key={index}>
-                        <input
-                          type="radio"
-                          name="shortListingStatus"
-                          value={status}
-                        />
-                        {status}
-                      </div>
-                    );
-                  })}
-                </PopoverContent>
-              </Popover>
-            </TableCell>
-            <TableCell className="text-right">
-
-                
-            </TableCell>
-          </tr>
+                    <PopoverContent className="w-32">
+                      {shortListingStatus.map((status, index) => {
+                        return (
+                          <div
+                          onClick= {()=> statusHandler(status, item?._id)}
+                            className="flex w-fit items-center my-2 cursor-pointer text-right"
+                            key={index}
+                          >
+                            <input
+                              type="radio"
+                              name="shortlisting"
+                              value={status}
+                            />{" "}
+                            {status}
+                          </div>
+                        );
+                      })}
+                    </PopoverContent>
+                  </Popover>
+                </TableCell>
+              </tr>
+            ))}
         </TableBody>
       </Table>
     </div>
