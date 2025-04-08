@@ -7,8 +7,11 @@ import { Pen, Mail, Contact } from "lucide-react";
 import AppliedJobs from "./AppliedJobs";
 import EditProfileModel from "./EditProfileModel";
 import { useSelector } from "react-redux";
+import useGetAllAppliedJobs from "@/hooks/useGetAllAppliedJobs";
 
 const Profile = () => {
+  useGetAllAppliedJobs();
+
 
   const [open, setOpen] = useState(false);
   const {user} = useSelector((store)=>store.auth);
