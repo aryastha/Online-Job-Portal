@@ -6,6 +6,10 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "../ui/carousel";
+import { Button } from "../ui/button";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { setSearchedQuery } from "@/redux/jobSlice";
 
 const Category = [
   "Full Stack Developer",
@@ -26,6 +30,15 @@ const Category = [
 ];
 
 const Categories = () => {
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const searchJobHandler = (query) =>{
+    dispatch(setSearchedQuery(query));
+    navigate("/browse");
+  }
+
   return (
     <div className="bg-gradient-to-r from-[#FF7F50] to-[#FF6347] py-10">
       <div className="text-center ">
@@ -40,10 +53,19 @@ const Categories = () => {
         <CarouselContent className="space-x-5">
           {Category.map((category, index) => {
             return (
-              <CarouselItem key={index }className="flex justify-center items-center md:basis-1/3 lg:basis-1/3 bg-white rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300">
-                <div className="text-center">
-                  <h3 className="font-semibold text-[#2C3E50] p-2">{category}</h3>
-                </div>
+              <CarouselItem 
+              key={index }
+              className="flex justify-center items-center md:basis-1/3 lg:basis-1/3 bg-white rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300">
+                {/* <div className="text-center">
+                  <div
+                  className="font-semibold text-[#2C3E50] p-2">{category}</div>
+                </div> */}
+                <Button
+                onClick= {() => searchJobHandler(category)}
+                variant="ghost"
+                className="ont-semibold text-[#2C3E50] hover:bg-white">
+                  {category}
+                </Button>
               </CarouselItem>
             );
           })}

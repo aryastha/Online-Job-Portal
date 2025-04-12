@@ -78,7 +78,7 @@ const Job1 = ({ job }) => {
             <Briefcase size={14} /> {job?.position}
           </Badge>
           <Badge className="bg-gray-50 text-gray-700 hover:bg-gray-100 flex items-center gap-1 px-3 py-1 text-sm border border-gray-200">
-            <Users size={14} /> {job.jobType}
+            <Users size={14} /> {job?.jobType}
           </Badge>
           <Badge className="bg-gray-50 text-gray-700 hover:bg-gray-100 flex items-center gap-1 px-3 py-1 text-sm border border-gray-200">
             <MapPin size={14} /> {job?.location}

@@ -1,78 +1,45 @@
-import React, { useEffect } from "react";
-import axios from "axios";
-import { JOB_API_ENDPOINT } from "@/utils/data";
-import { useDispatch } from "react-redux";
 import { setAllJobs } from "@/redux/jobSlice";
-import { redirect } from "react-router-dom";
+import { JOB_API_ENDPOINT } from "@/utils/data";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-//To fetch all the jobd from an API
-function useGetAllJobs() {
+const useGetAllJobs = () => {
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const { searchedQuery } = useSelector((store) => store.job);
 
   useEffect(() => {
     const fetchAllJobs = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const res = await axios.get(`${JOB_API_ENDPOINT}/get`, {
-          withCredentials: true,
-        });
-
+        const res = await axios.get(
+          `${JOB_API_ENDPOINT}/get?keyword=${searchedQuery}`,
+          {
+            withCredentials: true,
+          }
+        );
+        console.log("API Response:", res.data);
         if (res.data.status) {
-          dispatch(setAllJobs(res.data.jobs)); //sent to the redux store
-        }else{
-            console.log("API was not successful:", res.data);
+          // Updated success check
+          dispatch(setAllJobs(res.data.jobs));
+        } else {
+          setError("Failed to fetch jobs.");
         }
       } catch (error) {
-        console.log("Error fetching jobs",error);
+        console.error("Fetch Error:", error);
+        setError(error.message || "An error occurred.");
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchAllJobs();
-  }, [dispatch]);
-}
+  }, [dispatch, searchedQuery]);
+
+  return { loading, error };
+};
 
 export default useGetAllJobs;
-
-// import { useEffect } from "react";
-// import axios from "axios";
-// import { JOB_API_ENDPOINT } from "@/utils/data";
-// import { useDispatch, useSelector } from "react-redux";
-// import { setAllJobs } from "@/redux/jobSlice";
-// import { useNavigate } from "react-router-dom";
-
-// function useGetAllJobs() {
-//   const dispatch = useDispatch();
-//   const navigate = useNavigate();
-//   const { token } = useSelector((state) => state.auth); // Get token from auth state
-
-//   useEffect(() => {
-//     const fetchAllJobs = async () => {
-//       try {
-//         const res = await axios.get(`${JOB_API_ENDPOINT}/get`, {
-//           headers: {
-//             Authorization: `Bearer ${token}`, // Include JWT token
-//           },
-//           withCredentials: true,
-//         });
-
-//         if (res.data.status) {
-//           dispatch(setAllJobs(res.data.jobs));
-//         } else {
-//           console.log("API was not successful:", res.data);
-//         }
-//       } catch (error) {
-//         console.log("Error fetching jobs", error);
-//         if (error.response?.status === 401) {
-//           // Redirect to login if unauthorized
-//           navigate("/login");
-//         }
-//       }
-//     };
-
-//     if (token) {
-//       fetchAllJobs();
-//     } else {
-//       navigate("/login");
-//     }
-//   }, [dispatch, token, navigate]);
-// }
-
-// export default useGetAllJobs;
