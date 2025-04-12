@@ -1,9 +1,13 @@
 import React from "react";
 import { Badge } from "../ui/badge";
 import { Briefcase, MapPin, DollarSign, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 const JobCards = ({ job }) => {
+
+
+  const navigate = useNavigate();
   return (
-    <div className="p-6 shadow-md border border-gray-300 bg-white rounded-lg cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300">
+    <div onClick={()=>navigate(`/description/${job._id}`)} className="p-6 shadow-md border border-gray-300 bg-white rounded-lg cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300">
       {/* Company Info */}
       <div className="mb-4">
         <h1 className="font-semibold text-lg text-gray-800">
