@@ -10,6 +10,7 @@ import { USER_API_ENDPOINT } from "@/utils/data.js";
 import axios from "axios";
 import { toast } from "sonner";
 import { setLoading } from "@/redux/authSlice.js";
+import { useEffect } from "react";
 
 const Register = () => {
   const [input, setInput] = useState({
@@ -23,7 +24,7 @@ const Register = () => {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading } = useSelector((store) => store.auth);
+  const { loading, user } = useSelector((store) => store.auth);
 
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
@@ -66,6 +67,12 @@ const Register = () => {
       dispatch(setLoading(false));
     }
   };
+
+  useEffect(()=>{
+      if (user){
+        navigate("/")
+      }
+    },[])
 
   return (
     <div className="bg-[#F7F9FA] min-h-screen">

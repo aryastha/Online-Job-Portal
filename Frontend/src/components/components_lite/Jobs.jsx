@@ -56,7 +56,7 @@ const Jobs = () => {
                   exit= {{opacity: 0, x:-100}}
                   transition= {{duration: 0.4}}
                   >
-                    <Job1  job={job}/>
+                    <Job1  job={job} />
                   </motion.div>
                 ))}
               </div>

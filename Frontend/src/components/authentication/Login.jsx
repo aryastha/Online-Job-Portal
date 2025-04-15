@@ -12,6 +12,7 @@ import { setLoading , setUser} from "@/redux/authSlice.js";
 import { useDispatch, useSelector } from "react-redux";
 
 const Login = () => {
+
   const [input, setInput] = useState({
     email: "",
     password: "",
@@ -20,7 +21,7 @@ const Login = () => {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading } = useSelector((store) => store.auth);
+  const { loading, user } = useSelector((store) => store.auth);
 
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
@@ -49,6 +50,12 @@ const Login = () => {
       dispatch(setLoading(false));
     }
   };
+
+  useEffect(()=>{
+    if (user){
+      navigate("/")
+    }
+  },[user, navigate])
 
   return (
     <div className="bg-[#F7F9FA] min-h-screen">
