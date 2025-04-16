@@ -17,6 +17,7 @@ import Applicants from "./components/admincomponents/Applicants";
 import ProtectedRoute from "./components/admincomponents/ProtectedRoute";
 import AdminDashboard from "./components/admincomponents/AdminDashboard";
 import AllApplicants from "./components/admincomponents/AllApplicants";
+import RecruiterProfile from "./components/admincomponents/RecruiterProfile";
 // import PublicRoute from "./components/authentication/PublicRoute";
 
 const appRouter = createBrowserRouter([
@@ -63,6 +64,16 @@ const appRouter = createBrowserRouter([
     element: <ResumeBuilderPage />,
   },
   //admin
+
+  {
+    path: "/admin/profile",
+    element:
+    <ProtectedRoute>
+    {" "}
+    <RecruiterProfile />
+  </ProtectedRoute>
+  },
+
   {
     path: "/admin/dashboard",
     element:
