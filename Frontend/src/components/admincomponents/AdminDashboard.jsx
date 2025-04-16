@@ -43,7 +43,7 @@ const AdminDashboard = () => {
             value: totalApplications,
             icon: <Users className="w-5 h-5" />,
             color: "bg-green-100 text-green-600",
-            // path: "/admin/jobs"
+            path: "/admin/applicants"
         },
         {
             title: "New Applications",

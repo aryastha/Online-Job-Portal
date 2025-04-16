@@ -81,7 +81,7 @@ export const getAppliedJobs = async (req, res) => {
 };
 
 
-//gegt the applicants
+//get the applicants
 export const getApplicants = async (req, res) => {
   try {
     const jobId = req.params.id;
@@ -100,6 +100,24 @@ export const getApplicants = async (req, res) => {
     res.status(500).json({ message: "Server error", success: false });
   }
 };
+
+//get all applicants
+export const getAllApplicants = async (req, res) => {
+  try {
+    const applications = await Application.find()
+      .populate('applicant')
+      .populate({
+        path: 'job',
+        populate: { path: 'company' }
+      });
+
+    res.status(200).json({ applications });
+  } catch (error) {
+    console.error('Error in getAllApplicants:', error);
+    res.status(500).json({ message: 'Error fetching applicants', error: error.message });
+  }
+};
+
 
 //update the status
 export const updateStatus = async (req, res) => {

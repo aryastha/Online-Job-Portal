@@ -16,6 +16,7 @@ import PostJob from "./components/admincomponents/PostJob";
 import Applicants from "./components/admincomponents/Applicants";
 import ProtectedRoute from "./components/admincomponents/ProtectedRoute";
 import AdminDashboard from "./components/admincomponents/AdminDashboard";
+import AllApplicants from "./components/admincomponents/AllApplicants";
 // import PublicRoute from "./components/authentication/PublicRoute";
 
 const appRouter = createBrowserRouter([
@@ -118,10 +119,15 @@ const appRouter = createBrowserRouter([
         <Applicants />
       </ProtectedRoute>
     ),
-    // In your App.jsx, add this route:
-
-
   },
+  {
+    path: "/admin/applicants",
+    element: (
+      <ProtectedRoute>
+        <AllApplicants/>
+      </ProtectedRoute>
+    )
+  }
 ]);
 
 function App() {
