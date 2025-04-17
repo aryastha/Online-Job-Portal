@@ -3,24 +3,22 @@ import Navbar from "./Navbar.jsx";
 import FilterCard from "./FilterCard.jsx";
 import Job1 from "./Job1.jsx";
 import { useSelector } from "react-redux";
-import {motion} from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useEffect } from "react";
 
 const Jobs = () => {
+  const { allJobs, searchedQuery } = useSelector((store) => store.job);
+  const [filterJobs, setFilterJobs] = useState(allJobs);
 
-  const { allJobs , searchedQuery} = useSelector((store) => store.job); 
-  const [filterJobs, setFilterJobs] = useState (allJobs);
-
-
-  useEffect(()=>{
-    if (!searchedQuery || searchedQuery === ""){
+  useEffect(() => {
+    if (!searchedQuery || searchedQuery === "") {
       setFilterJobs(allJobs);
       return;
     }
 
-    const filteredJobs = allJobs.filter((job) =>{
+    const filteredJobs = allJobs.filter((job) => {
       const query = searchedQuery.toLowerCase();
-      return(
+      return (
         job.title?.toLowerCase().includes(query) ||
         job.description?.toLowerCase().includes(query) ||
         job.location?.toLowerCase().includes(query) ||
@@ -30,33 +28,40 @@ const Jobs = () => {
     });
 
     setFilterJobs(filteredJobs);
+  }, [allJobs, searchedQuery]);
 
-  },[allJobs, searchedQuery])
   return (
-    <div>
+    <div className="h-screen flex flex-col bg-gray-50">
       <Navbar />
-      <div className="max-w-7xl mx-auto mt-5 px-4"> {/* Added padding for better spacing on smaller screens */}
-        <div className="flex gap-5">
-          {/* FilterCard - Takes 20% of the width */}
-          <div className="w-1/5">
+      
+      {/* Main content container */}
+      <div className="flex flex-1 max-w-7xl w-full mx-auto px-4 py-6 gap-6">
+        {/* Filter section - fixed width */}
+        <div className="hidden md:block w-64 flex-shrink-0">
+          <div className="sticky top-6 h-[calc(100vh-7.5rem)] overflow-y-auto">
             <FilterCard />
           </div>
+        </div>
 
-          {/* Job List - Takes 80% of the width */}
+        {/* Jobs list section */}
+        <div className="flex-1">
           {filterJobs.length <= 0 ? (
-            <span className="text-gray-600">No jobs found</span>
+            <div className="flex items-center justify-center h-full">
+              <span className="text-gray-600 text-lg">No jobs found matching your criteria</span>
+            </div>
           ) : (
-            <div className="flex-1 h-[88vh] overflow-y-auto pb-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"> {/* Responsive grid */}
+            <div className="h-[calc(100vh-7.5rem)] overflow-y-auto pr-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filterJobs.map((job) => (
-                  <motion.div 
-                  key={job.id}
-                  initial={{opacity: 0, x:100}}
-                  animate={{opacity: 1, x: 0}}
-                  exit= {{opacity: 0, x:-100}}
-                  transition= {{duration: 0.4}}
+                  <motion.div
+                    key={job.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="h-full"  // Ensure consistent height
                   >
-                    <Job1  job={job} />
+                    <Job1 job={job} />
                   </motion.div>
                 ))}
               </div>
