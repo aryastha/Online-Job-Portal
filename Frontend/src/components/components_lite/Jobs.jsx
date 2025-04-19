@@ -17,6 +17,9 @@ const Jobs = () => {
     console.log("Filtered jobs count:", filterJobs.length);
   }, [filters, filterJobs]);
   // Map experience level numbers to human-readable format
+  useEffect(() => {
+    console.log("Sample job data:", allJobs.slice(0, 3)); // Log first 3 jobs
+  }, [allJobs]);
   const experienceLevelMap = {
     0: "Intern",
     1: "Entry Level",
@@ -27,7 +30,7 @@ const Jobs = () => {
 
   useEffect(() => {
     if (!allJobs.length) return;
-
+  
     const filteredJobs = allJobs.filter(job => {
       // Text search (unchanged)
       const matchesSearch = !searchedQuery || 
@@ -35,30 +38,34 @@ const Jobs = () => {
           field => field?.toLowerCase().includes(searchedQuery.toLowerCase())
         );
       
-      // Filter criteria with proper type checking
-      const matchesFilters = Object.entries(filters).every(([filterType, selectedValue]) => {
-        // Skip if no filter value is selected
-        if (!selectedValue) return true;
-        
-        // Convert selectedValue to array if it isn't already
-        const selectedValues = Array.isArray(selectedValue) 
-          ? selectedValue 
-          : [selectedValue];
+      // Get active filters (non-empty)
+      const activeFilters = Object.entries(filters).filter(
+        ([, value]) => value && (Array.isArray(value) ? value.length : true)
+      );
+  
+      // If no filters active, only apply search
+      if (!activeFilters.length) return matchesSearch;
+      
+      // Check if job matches ANY of the active filters (OR logic between filter types)
+      const matchesAnyFilter = activeFilters.some(([filterType, selectedValue]) => {
+        const selectedValues = Array.isArray(selectedValue) ? selectedValue : [selectedValue];
         
         switch(filterType) {
           case 'location':
-            return selectedValues.some(value => 
-              (job.location || '').toLowerCase().includes(value.toLowerCase())
+            return selectedValues.some(filterValue => 
+              (job.location || '').toLowerCase().includes(filterValue.toLowerCase())
             );
             
           case 'technology':
             const techFieldsToCheck = [
               ...(job.requirements || []),
-              job.position
+              job.position,
+              job.title,
+              job.description
             ].filter(Boolean);
-            
-            return selectedValues.some(value => {
-              const val = value.toLowerCase();
+  
+            return selectedValues.some(filterValue => {
+              const val = filterValue.toLowerCase();
               return techFieldsToCheck.some(tech => 
                 tech.toLowerCase().includes(val)
               );
@@ -66,21 +73,22 @@ const Jobs = () => {
             
           case 'experience':
             const experienceText = experienceLevelMap[job.experienceLevel]?.toLowerCase() || '';
-            return selectedValues.some(value => 
-              experienceText.includes(value.toLowerCase())
+            return selectedValues.some(filterValue => 
+              experienceText.includes(filterValue.toLowerCase())
             );
             
           case 'salary':
-            return selectedValues.some(value => checkSalaryRange(job.salary, value));
+            return selectedValues.some(filterValue => checkSalaryRange(job.salary, filterValue));
             
           default:
-            return true;
+            return false;
         }
       });
-    
-      return matchesSearch && matchesFilters;
+      
+      // Job must match search AND at least one filter
+      return matchesSearch && (activeFilters.length ? matchesAnyFilter : true);
     });
-
+  
     setFilterJobs(filteredJobs);
   }, [allJobs, searchedQuery, filters]);
 
