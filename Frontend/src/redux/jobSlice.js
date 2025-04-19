@@ -51,7 +51,23 @@ const jobSlice = createSlice({
         experience: "",
         salary: ""
       };
+    },
+
+    updateBookmarkStatus: (state, action) => {
+      const job = state.allJobs.find(j => j._id === action.payload.jobId);
+      if (job) {
+        job.isBookmarked = action.payload.bookmarked;
+      }
+    },
+    updateSavedStatus: (state, action) => {
+      const job = state.allJobs.find(j => j._id === action.payload.jobId);
+      if (job) {
+        job.isSaved = action.payload.saved;
+      }
     }
+ 
+
+
   }
 });
 
@@ -63,7 +79,9 @@ export const {
   setAllAppliedJobs,
   setSearchedQuery,
   setFilters,  // Export the new actions
-  clearFilters
+  clearFilters,
+  updateBookmarkStatus,
+  updateSavedStatus
 } = jobSlice.actions;
 
 export default jobSlice.reducer;

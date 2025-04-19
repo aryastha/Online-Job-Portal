@@ -3,7 +3,7 @@ import Navbar from "./Navbar";
 import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { Pen, Mail, Contact } from "lucide-react";
+import { Pen, Mail, Contact, Download, FileText, ChevronRight } from "lucide-react";
 import AppliedJobs from "./AppliedJobs";
 import EditProfileModel from "./EditProfileModel";
 import { useSelector } from "react-redux";
@@ -11,119 +11,158 @@ import useGetAllAppliedJobs from "@/hooks/useGetAllAppliedJobs";
 
 const Profile = () => {
   useGetAllAppliedJobs();
-
-
   const [open, setOpen] = useState(false);
-  const {user} = useSelector((store)=>store.auth);
-
-  const isResume = true;
+  const { user } = useSelector((store) => store.auth);
+  const isResume = Boolean(user?.profile?.resume);
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto bg-white border-gray-200 rounded-2xl my-5 p-8 shadow shadow-gray-500 hover:shadow-[#d9731d]">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-5">
-            {/* Avatar with proper styling */}
-            <div className="h-20 w-20 rounded-full overflow-hidden border border-gray-300">
-              <Avatar className="h-full w-full">
-                <AvatarImage
-                  src={user?.profile.profilePhoto} 
-                  alt="profilepicture"
-                  className="w-full h-full object-cover"
-                />
-              </Avatar>
-            </div>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Profile Card */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-md">
+          <div className="p-6 md:p-8">
+            {/* Profile Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+              <div className="flex items-center gap-5">
+                <div className="h-24 w-24 rounded-full overflow-hidden border-2 border-white shadow-md">
+                  <Avatar className="h-full w-full">
+                    <AvatarImage
+                      src={user?.profile?.profilePhoto || "https://via.placeholder.com/150"}
+                      alt="Profile picture"
+                      className="w-full h-full object-cover"
+                    />
+                  </Avatar>
+                </div>
 
-            {/* User Info */}
-            <div className="">
-              <h1 className="font-medium text-lg">{user?.fullname}</h1>
-              <p className="text-gray-600 text-justify max-w-2xl text-sm">
-                {user?.profile?.bio}
-              </p>
-            </div>
-        </div>
+                <div className="space-y-1">
+                  <h1 className="text-2xl font-bold text-gray-900">{user?.fullname}</h1>
+                  <p className="text-gray-600 max-w-2xl text-sm md:text-base">
+                    {user?.profile?.bio || "No bio added yet"}
+                  </p>
+                </div>
+              </div>
 
-          {/* Edit Button aligned properly */}
-          <Button 
-          onClick={() => setOpen(true) }
-          variant="outline" 
-          className="flex items-center gap-2">
-            <Pen size={16} />
-            Edit
-            
-          </Button>
-        </div>
-
-        {/* Contact Details */}
-        <div className="mt-5">
-          <div className="flex items-center gap-3 my-2">
-            <Mail size={18} />
-            <span>
-              <a href={`mailto:${user?.email}`}>{user?.email}</a></span>
-          </div>
-
-          <div className="flex items-center gap-3 my-2">
-            <Contact size={18} />
-            <span>
-              <a href={`tel:${user?.phoneNumber}`}>{user?.phoneNumber}</a></span>
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-medium font-bold mt-5"> Skills </h2>
-          <div className="flex items-center gap-5 mt-4">
-            {user?.profile?.skills.length !== 0 ? (
-              user?.profile?.skills.map((item, index) => (
-                <Badge
-                  key={index}
-                  variant="outline"
-                  className="p-2 font-medium"
-                >
-                  {" "}
-                  {item}{" "}
-                </Badge>
-              ))
-            ) : (
-              <span className=""> NA</span>
-            )}
-          </div>
-        </div>
-
-        {/* Resume */}
-        <div>
-          <h2 className="text-medium font-bold mt-5"> Resume</h2>
-          <div>
-            {isResume ? (
-              <a
-                target="_blank"
-                href={user?.profile?.resume}
+              <Button 
+                onClick={() => setOpen(true)}
+                variant="outline" 
+                className="flex items-center gap-2 border-gray-300 hover:bg-gray-50"
               >
-                <Button
-                  variant="outline"
-                  className="p-3 mt-4 bg-[#2C3E50] text-white hover:bg-[#394f66] hover:text-white"
-                >
-                  {" "}
-                  Download
-                </Button>
-              </a>
-            ) : (
-              <span> No Resume Found</span>
-            )}
+                <Pen size={16} />
+                Edit Profile
+              </Button>
+            </div>
+
+            {/* Contact & Details Section */}
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Contact Info */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <span className="w-1 h-6 bg-[#d9731d] rounded-full"></span>
+                  Contact Information
+                </h2>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-gray-700">
+                    <Mail size={18} className="text-[#d9731d]" />
+                    <a href={`mailto:${user?.email}`} className="hover:text-[#d9731d] hover:underline">
+                      {user?.email}
+                    </a>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 text-gray-700">
+                    <Contact size={18} className="text-[#d9731d]" />
+                    <a href={`tel:${user?.phoneNumber}`} className="hover:text-[#d9731d] hover:underline">
+                      {user?.phoneNumber || "Not provided"}
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Skills Section */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <span className="w-1 h-6 bg-[#d9731d] rounded-full"></span>
+                  Skills & Expertise
+                </h2>
+                
+                <div className="flex flex-wrap gap-2">
+                  {user?.profile?.skills?.length ? (
+                    user.profile.skills.map((item, index) => (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="px-3 py-1 font-medium bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100"
+                      >
+                        {item}
+                      </Badge>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-sm">No skills added yet</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Resume Section */}
+            <div className="mt-8">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                <span className="w-1 h-6 bg-[#d9731d] rounded-full"></span>
+                Resume
+              </h2>
+              
+              {isResume ? (
+                <div className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <div className="bg-[#d9731d]/10 p-3 rounded-full">
+                    <FileText className="text-[#d9731d]" size={20} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium">My Resume</p>
+                    <p className="text-sm text-gray-500">Click to download</p>
+                  </div>
+                  <a 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    href={user?.profile?.resume}
+                    className="text-[#d9731d] hover:text-[#b35917]"
+                  >
+                    <Download size={20} />
+                  </a>
+                </div>
+              ) : (
+                <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                  <p className="text-gray-500">No resume uploaded yet</p>
+                  <Button 
+                    variant="link" 
+                    className="text-[#d9731d] hover:text-[#b35917] p-0 h-auto"
+                    onClick={() => setOpen(true)}
+                  >
+                    Upload now <ChevronRight size={16} className="ml-1" />
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-        {/* Application Table */}
+
+        {/* Applied Jobs Section */}
+        <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-6 md:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900">Applied Jobs</h2>
+              <Button variant="ghost" className="text-[#d9731d] hover:bg-[#d9731d]/10">
+                View all <ChevronRight size={16} className="ml-1" />
+              </Button>
+            </div>
+            <AppliedJobs />
+          </div>
+        </div>
       </div>
 
-      <div className="max-w-7xl mx-auto bg-white rounded-2xl mt-5">
-          <h2 className="text-md font-bold"> Applied Jobs</h2>
-          <AppliedJobs />
-      </div>
-
-      {/* Edit Profile Model */}
+      {/* Edit Profile Modal */}
       <EditProfileModel open={open} setOpen={setOpen} />
-      </div>
+    </div>
   );
 };
 

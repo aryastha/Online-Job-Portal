@@ -157,93 +157,64 @@ export const logout = async (req, res) => {
     });
   }
 };
-
 export const updateProfile = async (req, res) => {
   try {
-    const { fullname, email, phoneNumber, bio, skills } = req.body;
-    const file = req.file;
-
-    console.log(fullname, email, phoneNumber, bio, skills);
-
-    const userId = req.id; //from middleware
+    const { fullname, email, phoneNumber, bio, skills} = req.body;
+    const files = req.files; // Contains both files
+    
+    const userId = req.id;
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-        success: false,
+      return res.status(404).json({ message: "User not found", success: false });
+    }
+
+    // Process profile picture
+    if (files?.profilePicture) {
+      const profilePhotoFile= files.profilePicture[0];
+      const fileUri = getDataUri(profilePhotoFile);
+      const result = await cloudinary.uploader.upload(fileUri.content, {
+        folder: 'profile_pictures'
       });
+      user.profile.profilePhoto = result.secure_url;
     }
 
-    // Validate the file
-    if (!file) {
-      return res.status(400).json({
-        message: "No file uploaded",
-        success: false,
+    // Process resume
+    if (files?.file) {
+      const resume = files.file[0];
+      const fileUri = getDataUri(resume);
+      const result = await cloudinary.uploader.upload(fileUri.content, {
+        folder: 'resumes'
       });
+      user.profile.resume = result.secure_url;
+      user.profile.resumeOriginalname = resume.originalname;
     }
 
-    //Cloudinary upload
-    const fileUri = getDataUri(file);
-    const cloudinaryResponse = await cloudinary.uploader.upload(fileUri.content); // Uploads the Base64 string to Cloudinary.
-
-
-
-
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-        success: false,
-      });
-    }
-
-    let skillsArray = [];
-    if (skills) {
-      skillsArray = skills.split(",");
-    }
-
-    //update database
-    if (fullname) {
-      user.fullname = fullname;
-    }
-    if (email) {
-      user.email = email;
-    }
-    if (phoneNumber) {
-      user.phoneNumber = phoneNumber;
-    }
-    if (bio) {
-      user.profile.bio = bio;
-    }
-    if (skills) {
-      user.profile.skills = skillsArray;
-    }
-    if(cloudinaryResponse){
-      user.profile.resume = cloudinaryResponse.secure_url; //Saves the resume link in MongoDB instead of storing the file directly.
-      user.profile.resumeOriginalname = file.originalname; //tores the original filename (e.g., "resume.pdf").
-    }
+    // Update other fields
+    if (fullname) user.fullname = fullname;
+    if (email) user.email = email;
+    if (phoneNumber) user.phoneNumber = phoneNumber;
+    if (bio) user.profile.bio = bio;
+    if (skills) user.profile.skills = skills.split(',').map(s => s.trim());
 
     await user.save();
 
-    const updatedUser = {
-      _id: user.id,
-      fullname: user.fullname,
-      email: user.email,
-      role: user.role,
-      phoneNumber: user.phoneNumber,
-      profile: user.profile,  
-    };
-
     return res.status(200).json({
-      message: `Profile updated successfully ${fullname}`,
-      user: updatedUser,
-      success: true,
+      message: "Profile updated successfully",
+      user: {
+        _id: user._id,
+        fullname: user.fullname,
+        email: user.email,
+        profile: user.profile,
+      },
+      success: true
     });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: "Server error update profile failed",
-      success: false,
+    console.error("Profile update error:", error);
+    return res.status(500).json({
+      message: error.message || "Profile update failed",
+      success: false
     });
   }
 };

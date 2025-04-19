@@ -51,20 +51,33 @@ const jobSchema = new mongoose.Schema(
         ref: "Application",
       },
     ],
-      standardizedLocation: { 
-        type: String,
-        enum: ["Kathmandu", "Lalitpur", "Bhaktapur", "Remote", "Other"],
-        default: null
+    standardizedLocation: {
+      type: String,
+      enum: ["Kathmandu", "Lalitpur", "Bhaktapur", "Remote", "Other"],
+      default: null,
+    },
+    primaryTechnology: {
+      type: String,
+      default: null,
+    },
+    secondaryTechnologies: {
+      type: [String],
+      default: [],
+    },
+    bookmarkedBy: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
       },
-      primaryTechnology: {
-        type: String,
-        default: null
+    ],
+    savedBy: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
       },
-      secondaryTechnologies: {
-        type: [String],
-        default: []
-      },
-    
+    ],
+    default: [],
+
     default: [],
   },
   { timestamps: true }
