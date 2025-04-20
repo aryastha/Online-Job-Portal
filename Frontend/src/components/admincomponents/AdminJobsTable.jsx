@@ -8,12 +8,12 @@ import {
   Calendar,
   Briefcase,
   Eye,
-} from "lucide-react";
+  Trash2,
+} from "lucide-react"; // Added Trash2 icon
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { setSearchJobByText } from "@/redux/jobSlice";
-// import store from "@/redux/store"
 import {
   Table,
   TableBody,
@@ -23,23 +23,17 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
+
 const AdminJobsTable = () => {
   const { companies, searchCompanyByText } = useSelector(
     (store) => store.company
   );
-
   const { allAdminJobs } = useSelector((store) => store.job);
   const { searchJobByText } = useSelector((store) => store.job || "");
-  // console.log('Redux job state:', store.job); // Inspect full state
-
-
   const navigate = useNavigate();
   const [filterJobs, setFilterJobs] = useState(allAdminJobs);
 
   useEffect(() => {
-    console.log("allAdminJobs:", allAdminJobs);
-    console.log("searchJobByText:", searchJobByText);
-
     const filteredJobs =
       allAdminJobs.length >= 0 &&
       allAdminJobs.filter((job) => {
@@ -53,9 +47,21 @@ const AdminJobsTable = () => {
             .includes(searchJobByText.toLowerCase())
         );
       });
-    console.log("filteredJobs:", filteredJobs);
     setFilterJobs(filteredJobs);
   }, [allAdminJobs, searchJobByText]);
+
+  // Delete job function (replace with your API call)
+  const handleDeleteJob = async (jobId) => {
+    try {
+      // Add your delete API call here
+      // await deleteJobAPI(jobId); 
+      // Then update local state or refetch jobs
+      setFilterJobs(filterJobs.filter(job => job._id !== jobId));
+      console.log("Job deleted:", jobId);
+    } catch (error) {
+      console.error("Error deleting job:", error);
+    }
+  };
 
   if (!companies) {
     return <div>Loading...</div>;
@@ -76,13 +82,16 @@ const AdminJobsTable = () => {
 
         <TableBody>
           {filterJobs.length === 0 ? (
-            <span>No Jobs Added</span>
+            <TableRow>
+              <TableCell colSpan={4} className="text-center">
+                No Jobs Added
+              </TableCell>
+            </TableRow>
           ) : (
             filterJobs?.map((job) => (
-              <TableRow key={job.id}>
+              <TableRow key={job._id}> {/* Changed from job.id to job._id */}
                 <TableCell>{job?.company?.name}</TableCell>
                 <TableCell>{job?.title}</TableCell>
-                {/* Date */}
                 <TableCell>
                   <div className="flex items-center text-sm text-gray-500">
                     <Calendar className="h-4 w-4 mr-1 text-gray-400" />
@@ -98,25 +107,34 @@ const AdminJobsTable = () => {
                     <PopoverTrigger>
                       <MoreHorizontal />
                     </PopoverTrigger>
-                    <PopoverContent className="w-32">
-                      <div
-                        onClick={() => navigate(`/admin/companies/${job._id}`)}
-                        className="flex items-center gap-3 w-fit cursor-pointer"
-                      >
-                        <Edit2 className="w-4" />
-                        <span>Edit</span>
+                    <PopoverContent className="w-40"> {/* Increased width */}
+                      <div className="space-y-2">
+                        <div
+                          onClick={() => navigate(`/admin/companies/${job._id}`)}
+                          className="flex items-center gap-3 w-fit cursor-pointer hover:bg-gray-100 p-1 rounded"
+                        >
+                          <Edit2 className="w-4" />
+                          <span>Edit</span>
+                        </div>
+                        
+                        <div
+                          onClick={() => navigate(`/admin/jobs/${job._id}/applicants`)}
+                          className="flex items-center gap-3 w-fit cursor-pointer hover:bg-gray-100 p-1 rounded"
+                        >
+                          <Eye className="w-4" />
+                          <span>Applicants</span>
+                        </div>
+                        
+                        <hr />
+                        
+                        <div
+                          onClick={() => handleDeleteJob(job._id)}
+                          className="flex items-center gap-3 w-fit cursor-pointer hover:bg-gray-100 p-1 rounded text-red-600"
+                        >
+                          <Trash2 className="w-4" />
+                          <span>Delete</span>
+                        </div>
                       </div>
-                      <hr className="mt-2"/>
-
-                      <div
-                        onClick={() => navigate(`/admin/jobs/${job._id}/applicants`)}
-                        className="flex items-center gap-3 w-fit cursor-pointer mt-2"
-                      >
-                        <Eye className="w-4" />
-                        <span>Applicants</span>
-                      </div>
-
-
                     </PopoverContent>
                   </Popover>
                 </TableCell>

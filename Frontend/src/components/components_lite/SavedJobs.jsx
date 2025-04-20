@@ -3,9 +3,9 @@ import { useSelector } from "react-redux";
 import { Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import axios from "axios"; // Make sure to import axios
+import axios from "axios";
 import { useState, useEffect } from "react";
-
+import { JOB_API_ENDPOINT } from "@/utils/data";
 const SavedJobs = () => {
   const { user } = useSelector((state) => state.auth);
   const [savedJobs, setSavedJobs] = useState([]);
@@ -15,11 +15,19 @@ const SavedJobs = () => {
     const fetchSavedJobs = async () => {
       try {
         const response = await axios.get(`${JOB_API_ENDPOINT}/saved/jobs`, {
-          headers: {
-            Authorization: `Bearer ${user.token}`, // Make sure to send the auth token
-          },
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
         });
         setSavedJobs(response.data.savedJobs);
+
+        // Transform the response to include isSaved flag for each job
+        const jobsWithSavedStatus = response.data.savedJobs.map(job => ({
+          ...job,
+          isSaved: true // All jobs here are saved by definition
+        }));
+        
+        setSavedJobs(jobsWithSavedStatus);
+
       } catch (err) {
         console.error("Error fetching saved jobs:", err);
       } finally {
@@ -29,8 +37,15 @@ const SavedJobs = () => {
 
     if (user) {
       fetchSavedJobs();
+    }else{
+      setSavedJobs([]);
     }
   }, [user]);
+
+
+ 
+
+
 
   if (loading) {
     return <div>Loading...</div>;
@@ -61,9 +76,9 @@ const SavedJobs = () => {
                 <h2 className="text-xl font-semibold text-[#2C3E50]">
                   {job.title}
                 </h2>
-                <p className="text-gray-600">{job.company?.name}</p> {/* Access company name properly */}
+                <p className="text-gray-600">{job.company?.name}</p>
               </div>
-              <Link to={`/jobs/${job._id}`}>
+              <Link to={`/description/${job._id}`}>
                 <Button className="bg-[#E67E22] hover:bg-[#cf6715] text-white">
                   View Job
                 </Button>

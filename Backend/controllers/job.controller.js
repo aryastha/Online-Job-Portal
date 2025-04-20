@@ -283,6 +283,64 @@ export const getSavedJobs = async (req, res) => {
   }
 };
 
+// In your jobController.js
+export const toggleSaveJob = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const jobId = req.params.jobId;
+    const { saved } = req.body;
+
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    if (saved) {
+      // Add to savedBy if not already present
+      if (!job.savedBy.includes(userId)) {
+        job.savedBy.push(userId);
+      }
+    } else {
+      // Remove from savedBy
+      job.savedBy = job.savedBy.filter(id => id.toString() !== userId.toString());
+    }
+
+    await job.save();
+    
+    res.json({ 
+      success: true,
+      isSaved: saved,
+      savedCount: job.savedBy.length
+    });
+
+  } catch (error) {
+    console.error("Error saving job:", error);
+    res.status(500).json({ message: error.message });
+  }
+}; 
+
+
+export const checkJobSavedStatus = async(req,res)=>{
+  try{
+    const userId = req.user._id;
+    const jobId = req.params.jobId;
+
+    const job = await Job.findById(jobId);
+
+    if(!job){
+      return res.status(404).json({message: "Job not found"});
+    }
+
+    const isSaved = job.savedBy.includes(userId);
+    res.json({isSaved});
+
+
+  }catch(error){
+    console.error("Error checking saved status:", error);
+    res.status(500).json({message: error.message});
+  }
+}
+
 // export const getSavedJobs = async (req, res) => {
 //   try {
 //     const userId = req.id;

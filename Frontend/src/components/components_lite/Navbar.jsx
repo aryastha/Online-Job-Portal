@@ -98,7 +98,6 @@ const Navbar = () => {
                   </Link>
                 </li>
                 {/* Resume */}
-
                 <li>
                   <Link
                     to="/resume/create"
@@ -153,7 +152,6 @@ const Navbar = () => {
                 </div>
                 <div className="flex flex-col space-y-2">
                   {/* User Profile */}
-
                   {user && user.role === "Recruiter" ? (
                     <Link to="/admin/profile">
                       <Button
@@ -175,23 +173,28 @@ const Navbar = () => {
                       </Button>
                     </Link>
                   )}
+                  
+                  {/* Saved Jobs - Only for Employees */}
+                  {user && user.role === "Employee" && (
+                    <Link to="/saved/jobs">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start gap-2 hover:bg-gray-100 text-[#2C3E50]"
+                      >
+                        <Bookmark size={16} />
+                        Saved Jobs
+                      </Button>
+                    </Link>
+                  )}
+                  
                   <Button
                     onClick={logoutHandler}
-                    variant="link"
+                    variant="ghost"
                     className="w-full justify-start gap-2 hover:bg-gray-100 text-[#2C3E50]"
                   >
                     <LogOut size={16} />
                     Logout
                   </Button>
-                  <Link to="/saved/jobs">
-                    <Button
-                      variant="link"
-                      className="w-full justify-start gap-2 hover:bg-gray-100 text-[#2C3E50]"
-                    >
-                      <Bookmark size={16} />
-                      Saved Jobs
-                    </Button>
-                  </Link>
                 </div>
               </PopoverContent>
             </Popover>

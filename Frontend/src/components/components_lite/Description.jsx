@@ -49,11 +49,7 @@ const Description = (job) => {
           ...singleJob,
           applications: [...singleJob.applications, { applicant: user?._id }],
         };
-        //{...singleJob} - Creates a shallow copy of the original job object
-
-        // applications: [...] - Overwrites just the applications array
-
-        //[...singleJob.applications, {applicant:user?._id}]: Copies all existing applications and Adds new application object at the end
+        
 
         console.log(res.data);
         toast.success(res.data.message);

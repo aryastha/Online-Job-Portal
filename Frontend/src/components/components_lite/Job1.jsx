@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { updateBookmarkStatus, updateSavedStatus } from "@/redux/jobSlice";
 import { JOB_API_ENDPOINT } from "@/utils/data";
-
+import { useEffect } from "react";
 
 const Job1 = ({ job }) => {
   const navigate = useNavigate();
@@ -18,17 +18,18 @@ const Job1 = ({ job }) => {
   const user = useSelector((store) => store.auth.user);
 
   const [isBookmarked, setIsBookmarked] = useState(job.isBookmarked || false);
-  const [isSaved, setIsSaved] = useState(job.isSaved || false);
+  const [isSaved, setIsSaved] = useState(false);
+
   const [isLoading, setIsLoading] = useState({
     bookmark: false,
-    save: false
+    save: false,
   });
 
   const daysAgo = (mongodbTime) => {
     if (!mongodbTime) return null;
     const createdAt = new Date(mongodbTime);
     if (isNaN(createdAt.getTime())) return null;
-    
+
     const currentTime = new Date();
     const timeDiff = currentTime.getTime() - createdAt.getTime();
     return Math.floor(timeDiff / (1000 * 3600 * 24));
@@ -38,12 +39,12 @@ const Job1 = ({ job }) => {
     e.stopPropagation();
     if (!user) {
       toast.error("Please login to bookmark jobs");
-      navigate('/login')
+      navigate("/login");
       return;
     }
 
-    setIsLoading(prev => ({ ...prev, bookmark: true }));
-    
+    setIsLoading((prev) => ({ ...prev, bookmark: true }));
+
     try {
       const newBookmarkStatus = !isBookmarked;
       // API call to update bookmark status
@@ -53,55 +54,79 @@ const Job1 = ({ job }) => {
         {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
-        });
-    
-      
+        }
+      );
+
       // Update local and global state
       setIsBookmarked(newBookmarkStatus);
-      dispatch(updateBookmarkStatus({ jobId: job._id, bookmarked: newBookmarkStatus }));
-      
+      dispatch(
+        updateBookmarkStatus({ jobId: job._id, bookmarked: newBookmarkStatus })
+      );
+
       toast.success(newBookmarkStatus ? "Job bookmarked!" : "Bookmark removed");
     } catch (error) {
       console.error("Bookmark error:", error);
       toast.error(error.response?.data?.message || "Failed to update bookmark");
     } finally {
-      setIsLoading(prev => ({ ...prev, bookmark: false }));
+      setIsLoading((prev) => ({ ...prev, bookmark: false }));
     }
   };
+
+  useEffect(() => {
+    if (user && job?.savedBy) {
+      setIsSaved(job.savedBy.includes(user._id));
+    }
+  }, [user, job?.savedBy]);
 
   const handleSaveForLater = async (e) => {
     e.stopPropagation();
     if (!user) {
-      console.log("User state:", user);
       toast.error("Please login to save jobs");
-      navigate('/login');
+      navigate("/login");
       return;
     }
-  
 
-    setIsLoading(prev => ({ ...prev, save: true }));
-    
+    setIsLoading((prev) => ({ ...prev, save: true }));
+
     try {
       const newSavedStatus = !isSaved;
-      // API call to update saved status
       await axios.post(
         `${JOB_API_ENDPOINT}/${job._id}/save`,
         { saved: newSavedStatus },
         {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
-        });
-      
+        }
+      );
+
       // Update local and global state
       setIsSaved(newSavedStatus);
-      dispatch(updateSavedStatus({ jobId: job._id, saved: newSavedStatus }));
-      
-      toast.success(newSavedStatus ? "Job saved for later!" : "Removed from saved jobs");
+      dispatch(
+        updateSavedStatus({
+          jobId: job._id,
+          saved: newSavedStatus,
+          userId: user._id,
+        })
+      );
+
+      //update localStorage to persist across sessions
+      // const savedJobs = JSON.parse(localStorage.getItem("savedJobs") || "{}");
+      // if (newSavedStatus) {
+      //   savedJobs[job._id] = true;
+      // } else {
+      //   delete savedJobs[job._id];
+      // }
+
+      // localStorage.setItem("savedJobs", JSON.stringify(savedJobs));
+
+      toast.success(
+        newSavedStatus ? "Job saved for later!" : "Removed from saved jobs"
+      );
     } catch (error) {
       console.error("Save error:", error);
       toast.error(error.response?.data?.message || "Failed to save job");
     } finally {
-      setIsLoading(prev => ({ ...prev, save: false }));
+      setIsLoading((prev) => ({ ...prev, save: false }));
     }
   };
 
@@ -114,13 +139,12 @@ const Job1 = ({ job }) => {
             <p className="text-gray-500 text-sm font-light">
               {daysAgo(job?.updatedAt) === 0
                 ? "Today"
-                : `${daysAgo(job?.updatedAt)} days ago`
-              }  
+                : `${daysAgo(job?.updatedAt)} days ago`}
             </p>
             <Button
               variant="ghost"
               className={`rounded-full p-2 hover:bg-gray-50 ${
-                isBookmarked ? 'text-[#E67E22]' : 'text-gray-600'
+                isBookmarked ? "text-[#E67E22]" : "text-gray-600"
               }`}
               size="icon"
               onClick={handleBookmark}
@@ -128,7 +152,7 @@ const Job1 = ({ job }) => {
             >
               <Bookmark
                 size={18}
-                className={isBookmarked ? 'fill-current' : ''}
+                className={isBookmarked ? "fill-current" : ""}
               />
             </Button>
           </div>
@@ -144,7 +168,7 @@ const Job1 = ({ job }) => {
               </h1>
               <p className="text-sm text-gray-600 flex items-center gap-1">
                 <MapPin size={16} className="text-gray-500" /> {job?.location}
-              </p>  
+              </p>
             </div>
           </div>
         </div>
@@ -188,24 +212,39 @@ const Job1 = ({ job }) => {
           <Button
             variant="solid"
             className={`${
-              isSaved ? 'bg-[#E67E22]' : 'bg-[#2C3E50]'
+              isSaved ? "bg-[#E67E22]" : "bg-[#2C3E50]"
             } text-white hover:bg-blue-600`}
             onClick={handleSaveForLater}
             disabled={isLoading.save}
           >
-
             {isLoading.save ? (
               <span className="flex items-center gap-2">
-                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 Processing...
               </span>
             ) : isSaved ? (
-              'Saved!'
+              "Saved!"
             ) : (
-              'Save for Later'
+              "Save for Later"
             )}
           </Button>
         </div>
