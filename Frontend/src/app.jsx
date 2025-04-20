@@ -18,6 +18,7 @@ import ProtectedRoute from "./components/admincomponents/ProtectedRoute";
 import AdminDashboard from "./components/admincomponents/AdminDashboard";
 import AllApplicants from "./components/admincomponents/AllApplicants";
 import RecruiterProfile from "./components/admincomponents/RecruiterProfile";
+import SavedJobs from "./components/components_lite/SavedJobs";
 // import PublicRoute from "./components/authentication/PublicRoute";
 
 const appRouter = createBrowserRouter([
@@ -138,7 +139,11 @@ const appRouter = createBrowserRouter([
         <AllApplicants/>
       </ProtectedRoute>
     )
-  }
+  },
+  {
+    path: "/saved/jobs",
+    element: <SavedJobs />,
+  },
 ]);
 
 function App() {

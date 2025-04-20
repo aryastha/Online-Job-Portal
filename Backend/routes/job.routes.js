@@ -1,5 +1,5 @@
 import express from 'express';
-import {postJob, getAllJobs, getJobById,getAdminJobs,bookmarkJob,getBookmarkedJobs, saveJob} from '../controllers/job.controller.js';
+import {postJob, getAllJobs, getJobById,getAdminJobs,bookmarkJob,getBookmarkedJobs, saveJob,getSavedJobs} from '../controllers/job.controller.js';
 import authenticateToken from '../middleware/isAuthenticated.js';
 
 const router = express.Router();
@@ -12,6 +12,8 @@ router.route('/get/:id').get(authenticateToken, getJobById);
 router.route('/:id/bookmark').post(authenticateToken, bookmarkJob);
 router.route('/bookmarked').get(authenticateToken, getBookmarkedJobs);
 router.route('/:id/save').post(authenticateToken, saveJob);
+router.route('/saved/jobs').get(authenticateToken, getSavedJobs);
+
 
 
 

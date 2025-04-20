@@ -78,7 +78,6 @@ const jobSchema = new mongoose.Schema(
     ],
     default: [],
 
-    default: [],
   },
   { timestamps: true }
 );

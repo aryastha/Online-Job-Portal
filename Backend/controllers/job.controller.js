@@ -1,4 +1,5 @@
 import { Job } from "../models/job.model.js";
+import { User } from "../models/user.model.js";
 //Admin job posting
 export const postJob = async (req, res) => {
   try {
@@ -196,7 +197,6 @@ export const getBookmarkedJobs = async (req, res) => {
   }
 };
 
-// In job.controller.js
 export const saveJob = async (req, res) => {
   try {
     const jobId = req.params.id;
@@ -210,6 +210,8 @@ export const saveJob = async (req, res) => {
       });
     }
 
+    const user = await User.findById(userId);
+
     // Check if already saved
     const isSaved = job.savedBy.includes(userId);
     
@@ -220,11 +222,21 @@ export const saveJob = async (req, res) => {
         { $pull: { savedBy: userId } },
         { new: true }
       );
+      await User.findByIdAndUpdate(
+        userId,
+        { $pull: { bookmarks: jobId } },
+        { new: true }
+      );
     } else {
       // Add save
       await Job.findByIdAndUpdate(
         jobId,
         { $addToSet: { savedBy: userId } },
+        { new: true }
+      );
+      await User.findByIdAndUpdate(
+        userId,
+        { $addToSet: { bookmarks: jobId } },
         { new: true }
       );
     }
@@ -244,4 +256,90 @@ export const saveJob = async (req, res) => {
   }
 };
 
+export const getSavedJobs = async (req, res) => {
+  try {
+    const userId = req.id;
+
+    const user = await User.findById(userId).populate({
+      path: "bookmarks",
+      populate: {
+        path: "company",
+        select: "name" // Only get company name
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found", status: false });
+    }
+
+    return res.status(200).json({
+      savedJobs: user.bookmarks,
+      status: true,
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server Error", status: false });
+  }
+};
+
+// export const getSavedJobs = async (req, res) => {
+//   try {
+//     const userId = req.id;
+
+//     const user = await User.findById(userId).populate("bookmarks");
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found", status: false });
+//     }
+
+//     return res.status(200).json({
+//       savedJobs: user.bookmarks,
+//       status: true,
+//     });
+
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ message: "Server Error", status: false });
+//   }
+// };
+
+
+// export const saveJob = async(req, res) =>{
+//   try{
+//     const user = await User.findById(req.user.id);
+
+//     if(!user.bookmarks.includes(req.params.jobId)){
+//       user.savedJobs.push(req.params.jobId);
+//       await user.save();
+//       return res.json({success: true, message: "Job saved successfully"});
+//     }
+
+//     return res.status(400).json({
+//       success:false,
+//       message: "Something went wrong"
+//     });
+
+//   }catch(err){
+//     res.status(500).json({
+//       success: false,
+//       message: "Error saving job"
+//     })
+//   }
+// }
+
+// const unsaveJob = async (req, res) => {
+//   try {
+//     const user = await User.findById(req.user.id);
+
+//     user.savedJobs = user.savedJobs.filter(
+//       (jobId) => jobId.toString() !== req.params.jobId
+//     );
+//     await user.save();
+
+//     res.json({ success: true, message: "Job removed from saved list" });
+//   } catch (err) {
+//     res.status(500).json({ success: false, message: "Something went wrong" });
+//   }
+// };
 

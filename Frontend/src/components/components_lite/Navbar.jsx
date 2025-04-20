@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Popover, PopoverTrigger, PopoverContent } from "../ui/popover";
-import { LogOut, User2 } from "lucide-react";
+import { LogOut, User2, Bookmark } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import axios from "axios";
@@ -98,7 +98,7 @@ const Navbar = () => {
                   </Link>
                 </li>
                 {/* Resume */}
-                
+
                 <li>
                   <Link
                     to="/resume/create"
@@ -156,27 +156,25 @@ const Navbar = () => {
 
                   {user && user.role === "Recruiter" ? (
                     <Link to="/admin/profile">
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start gap-2 hover:bg-gray-100 text-[#2C3E50]"
-                    >
-                      <User2 size={16} />
-                      Profile
-                    </Button>
-                  </Link>
-                  ):(
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start gap-2 hover:bg-gray-100 text-[#2C3E50]"
+                      >
+                        <User2 size={16} />
+                        Profile
+                      </Button>
+                    </Link>
+                  ) : (
                     <Link to="/profile">
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start gap-2 hover:bg-gray-100 text-[#2C3E50]"
-                    >
-                      <User2 size={16} />
-                      Profile
-                    </Button>
-                  </Link>
-
-                  )
-                  }
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start gap-2 hover:bg-gray-100 text-[#2C3E50]"
+                      >
+                        <User2 size={16} />
+                        Profile
+                      </Button>
+                    </Link>
+                  )}
                   <Button
                     onClick={logoutHandler}
                     variant="link"
@@ -185,6 +183,15 @@ const Navbar = () => {
                     <LogOut size={16} />
                     Logout
                   </Button>
+                  <Link to="/saved/jobs">
+                    <Button
+                      variant="link"
+                      className="w-full justify-start gap-2 hover:bg-gray-100 text-[#2C3E50]"
+                    >
+                      <Bookmark size={16} />
+                      Saved Jobs
+                    </Button>
+                  </Link>
                 </div>
               </PopoverContent>
             </Popover>
