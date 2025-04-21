@@ -1,12 +1,25 @@
 import { Application } from "../models/application.model.js";
 import { Job } from "../models/job.model.js";
-
+import cloudinary from "../utils/cloud.js";
 
 //apply job
 export const applyJob = async (req, res) => {
   try {
+    console.log("Request body:", req.body); 
+
     const userId = req.id;
     const jobId = req.params.id;
+    const { resumeUrl } = req.body;
+
+    // Validate inputs
+    if (!resumeUrl) {
+      console.log("Missing resumeUrl in:", req.body); 
+      return res.status(400).json({ 
+        success: false,
+        message: "Resume URL is required" 
+      });
+    }
+
     if (!jobId) {
       return res
         .status(400)
@@ -28,7 +41,6 @@ export const applyJob = async (req, res) => {
     //check if the job exists or not
     const job = await Job.findById(jobId);
 
-
     console.log(job);
     if (!job) {
       return res.status(404).json({ message: "Job not found", success: false });
@@ -38,18 +50,28 @@ export const applyJob = async (req, res) => {
     const newApplication = await Application.create({
       job: jobId,
       applicant: userId,
+      status: "pending",
+      resume: resumeUrl
     });
 
     if (!job.applications) {
       job.applications = []; // Initialize as an empty array if it's null
     }
-    
+
     job.applications.push(newApplication._id);
     await job.save();
 
+    //return the job data with populated applications
+    const updatedJob = await Job.findById(jobId)
+    .populate({
+      path: "applications",
+      match: {applicant: userId},
+      select: "status"
+    });
+
     return res
       .status(201)
-      .json({ message: "Application submitted", success: true });
+      .json({ message: "Application submitted", success: true , job: updatedJob});
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error", success: false });
@@ -80,7 +102,6 @@ export const getAppliedJobs = async (req, res) => {
   }
 };
 
-
 //get the applicants
 export const getApplicants = async (req, res) => {
   try {
@@ -105,19 +126,20 @@ export const getApplicants = async (req, res) => {
 export const getAllApplicants = async (req, res) => {
   try {
     const applications = await Application.find()
-      .populate('applicant')
+      .populate("applicant")
       .populate({
-        path: 'job',
-        populate: { path: 'company' }
+        path: "job",
+        populate: { path: "company" },
       });
 
     res.status(200).json({ applications });
   } catch (error) {
-    console.error('Error in getAllApplicants:', error);
-    res.status(500).json({ message: 'Error fetching applicants', error: error.message });
+    console.error("Error in getAllApplicants:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching applicants", error: error.message });
   }
 };
-
 
 //update the status
 export const updateStatus = async (req, res) => {
@@ -150,5 +172,41 @@ export const updateStatus = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error", success: false });
+  }
+};
+
+
+//handles application upload for job
+export const uploadResume = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ 
+        success: false,
+        message: "No file uploaded" 
+      });
+    }
+
+    // Convert buffer to base64 for Cloudinary
+    const fileBase64 = req.file.buffer.toString('base64');
+    const fileUri = `data:${req.file.mimetype};base64,${fileBase64}`;
+
+    // Upload to Cloudinary
+    const result = await cloudinary.uploader.upload(fileUri, {
+      resource_type: 'auto',
+      folder: 'resumes'
+    });
+
+    return res.status(200).json({
+      success: true,
+      url: result.secure_url,
+      message: "Resume uploaded successfully"
+    });
+
+  } catch (error) {
+    console.error("Upload error:", error);
+    return res.status(500).json({ 
+      success: false,
+      message: error.message || "Internal server error" 
+    });
   }
 };

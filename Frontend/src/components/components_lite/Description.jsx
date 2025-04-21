@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import {
@@ -18,61 +18,123 @@ import { setSingleJob } from "@/redux/jobSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
-const Description = (job) => {
+const Description = () => {
   const params = useParams();
   const jobId = params.id;
 
   const { user } = useSelector((store) => store.auth);
   const { singleJob } = useSelector((store) => store.job);
+  const isInitiallyApplied = singleJob
+    ? singleJob.applications?.some(
+        (app) => app.applicant?._id === user?._id || app.applicant === user?._id
+      ) ?? false
+    : false;
+
+  const [resumeFile, setResumeFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isApplied, setIsApplied] = useState(isInitiallyApplied);
+  const [isLoading, setIsLoading] = useState(false);
 
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const isInitiallyApplied =
-    singleJob?.application?.some(
-      (application) => application.applicant === user?._id
-    ) || false;
+  const handleResumeUpload = async (file) => {
+    try {
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append("file", file);
 
-  const [isApplied, setisApplied] = useState(isInitiallyApplied);
+      const uploadRes = await axios.post(
+        `${APPLICATION_API_ENDPOINT}/upload/resume`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true,
+        }
+      );
+
+      console.log("Upload response:", uploadRes.data);
+
+      if (!uploadRes.data.success || !uploadRes.data.url) {
+        throw new Error(
+          uploadRes.data.message || "Invalid response from server"
+        );
+      }
+
+      return uploadRes.data.res;
+    } catch (error) {
+      toast.error("Failed to upload the resume");
+      throw error;
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const applyJobHandler = async () => {
+    if (!resumeFile) {
+      toast.warning("Please upload your resume first");
+      return;
+    }
     try {
-      const res = await axios.get(
+      setIsLoading(true);
+      const resumeUrl = await handleResumeUpload(resumeFile);
+      console.log("Resume Url is: ", resumeUrl);
+
+      const res = await axios.post(
         `${APPLICATION_API_ENDPOINT}/apply/${jobId}`,
-        { withCredentials: true }
+        { resumeUrl: resumeUrl },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
       );
 
       if (res.data.success) {
-        setisApplied(true);
-        const updateSingleJob = {
-          ...singleJob,
-          applications: [...singleJob.applications, { applicant: user?._id }],
-        };
-        
-
-        console.log(res.data);
+        setIsApplied(true);
+        dispatch(setSingleJob(res.data.job));
         toast.success(res.data.message);
-        dispatch(setSingleJob(updateSingleJob));
       }
     } catch (error) {
       console.log(error.message);
-      toast.error(error.response.data.message);
+      setIsApplied(false);
+      toast.error(error.response?.data?.message || "Failed to apply");
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  //update useEffect to properly check applications
+  useEffect(() => {
+    const checkApplicationStatus = () => {
+      const hasApplied = singleJob?.applications?.some(
+        (app) => app.applicant?._id === user?._id || app.applicant === user?._id
+      );
+      setIsApplied(hasApplied || false);
+    };
+
+    checkApplicationStatus();
+  }, [singleJob, user?._id]);
 
   useEffect(() => {
     const fetchSingleJob = async () => {
       setLoading(true);
       setError(null);
       try {
-        
         const res = await axios.get(`${JOB_API_ENDPOINT}/get/${jobId}`, {
           withCredentials: true,
         });
         if (res.data.status) {
           dispatch(setSingleJob(res.data.job));
-          setisApplied(res.data.job.applications.some(application => application.applicant === user?._id));
+          setIsApplied(
+            res.data.job.applications.some(
+              (application) => application.applicant === user?._id
+            )
+          );
         } else {
           setError("Failed to fetch the jobs");
         }
@@ -117,7 +179,9 @@ const Description = (job) => {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               {singleJob?.title}
             </h1>
-            <p className="text-lg text-gray-600 mb-4">Open Positions: {singleJob?.position}</p>
+            <p className="text-lg text-gray-600 mb-4">
+              Open Positions: {singleJob?.position}
+            </p>
           </div>
           <div className="bg-[#E67E22]/10 px-4 py-2 rounded-lg">
             <span className="text-[#E67E22] font-semibold">
@@ -143,6 +207,60 @@ const Description = (job) => {
         </div>
       </div>
 
+      {/* // Temporary debug button - remove after testing */}
+      <button
+        onClick={async () => {
+          const testPayload = {
+            resumeUrl: "https://res.cloudinary.com/demo/resume.pdf", // Test URL
+          };
+
+          try {
+            const testRes = await axios.post(
+              `${APPLICATION_API_ENDPOINT}/apply/${jobId}`,
+              testPayload,
+              {
+                withCredentials: true,
+                headers: { "Content-Type": "application/json" },
+              }
+            );
+            console.log("Test successful:", testRes.data);
+          } catch (err) {
+            console.error("Test failed:", {
+              status: err.response?.status,
+              data: err.response?.data,
+              config: err.config,
+            });
+          }
+        }}
+        className="p-2 bg-yellow-100 text-yellow-800 mb-4"
+      >
+        Test Application Without Upload
+      </button>
+
+      {/* Apply Resume Button */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Upload Resume (PDF)
+        </label>
+        <input
+          type="file"
+          accept=".pdf"
+          onChange={(e) => setResumeFile(e.target.files[0])}
+          className="block w-full text-sm text-gray-500
+          file:mr-4 file:py-2 file:px-4
+          file:rounded-md file:border-0
+          file:text-sm file:font-semibold
+          file:bg-[#E67E22] file:text-white
+          hover:file:bg-[#d9731a]"
+          disabled={isApplied}
+        />
+        {resumeFile && (
+          <p className="mt-2 text-sm text-green-600">
+            {resumeFile.name} selected
+          </p>
+        )}
+      </div>
+
       {/* Apply Button */}
       <div className="mb-8">
         <Button
@@ -152,9 +270,15 @@ const Description = (job) => {
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-[#E67E22] hover:bg-[#d9731a] text-white hover:shadow-lg"
           }`}
-          disabled={isApplied}
+          disabled={isApplied || isLoading || isUploading}
         >
-          {isApplied ? "Application Submitted" : "Apply Now"}
+          {isUploading
+            ? "Uploading Resume..."
+            : isLoading
+            ? "Submitting..."
+            : isApplied
+            ? "Application Submitted"
+            : "Apply Now"}
         </Button>
       </div>
 
@@ -188,7 +312,10 @@ const Description = (job) => {
                 <h3 className="font-semibold text-gray-900">
                   Experience Level
                 </h3>
-                <p className="text-gray-700">{singleJob?.experienceLevel} {singleJob?.experienceLevel?.length !== 1 ? "years" : "year"}</p>
+                <p className="text-gray-700">
+                  {singleJob?.experienceLevel}{" "}
+                  {singleJob?.experienceLevel?.length !== 1 ? "years" : "year"}
+                </p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">Salary</h3>
