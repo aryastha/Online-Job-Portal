@@ -17,7 +17,14 @@ const Job1 = ({ job }) => {
 
   const user = useSelector((store) => store.auth.user);
 
-  const [isBookmarked, setIsBookmarked] = useState(job.isBookmarked || false);
+  const [isBookmarked, setIsBookmarked] = useState(() => {
+    // Check server data first
+    if (user && job?.bookmarkedBy?.includes(user._id)) return true;
+    // Fallback to localStorage
+    const savedBookmarks = JSON.parse(localStorage.getItem('bookmarks') || '{}');
+    return savedBookmarks[job._id] || false;
+
+  });
   const [isSaved, setIsSaved] = useState(false);
 
   const [isLoading, setIsLoading] = useState({
@@ -42,38 +49,49 @@ const Job1 = ({ job }) => {
       navigate("/login");
       return;
     }
-
+  
     setIsLoading((prev) => ({ ...prev, bookmark: true }));
-
+  
     try {
       const newBookmarkStatus = !isBookmarked;
-      // API call to update bookmark status
-      await axios.post(
+      
+      const response = await axios.post(
         `${JOB_API_ENDPOINT}/${job._id}/bookmark`,
         { bookmarked: newBookmarkStatus },
-        {
-          headers: { "Content-Type": "application/json" },
-          withCredentials: true,
+        { headers: { "Content-Type": "application/json" }, withCredentials: true }
+      );
+  
+      if (response.data.status) {
+        setIsBookmarked(newBookmarkStatus);
+        dispatch(updateBookmarkStatus({ jobId: job._id, bookmarked: newBookmarkStatus }));
+        
+        const savedBookmarks = JSON.parse(localStorage.getItem('bookmarks')) || {};
+        if (newBookmarkStatus) {
+          savedBookmarks[job._id] = true;
+        } else {
+          delete savedBookmarks[job._id];
         }
-      );
-
-      // Update local and global state
-      setIsBookmarked(newBookmarkStatus);
-      dispatch(
-        updateBookmarkStatus({ jobId: job._id, bookmarked: newBookmarkStatus })
-      );
-
-      toast.success(newBookmarkStatus ? "Job bookmarked!" : "Bookmark removed");
+        localStorage.setItem('bookmarks', JSON.stringify(savedBookmarks));
+  
+        toast.success(newBookmarkStatus ? "Job bookmarked!" : "Bookmark removed");
+      } else {
+        throw new Error(response.data.message || "Failed to update bookmark");
+      }
     } catch (error) {
       console.error("Bookmark error:", error);
-      toast.error(error.response?.data?.message || "Failed to update bookmark");
+      toast.error(error.response?.data?.message || error.message || "Failed to update bookmark");
     } finally {
       setIsLoading((prev) => ({ ...prev, bookmark: false }));
     }
   };
 
+  
   useEffect(() => {
     if (user && job?.savedBy) {
+      //check bookmarked status
+      setIsBookmarked(job?.bookmarkedBy?.includes(user._id) || false);
+      //check save status
+
       setIsSaved(job.savedBy.includes(user._id));
     }
   }, [user, job?.savedBy]);

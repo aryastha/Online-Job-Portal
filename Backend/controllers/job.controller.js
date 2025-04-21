@@ -69,8 +69,25 @@ export const getAllJobs = async (req, res) => {
       .populate({
         path: "company",
       })
+      .lean() // Convert to plain JS object
       .sort({ createdAt: -1 });
 
+      jobs.forEach(job =>{
+        if (!job.bookmarkedBy){
+          job.bookmarkedBy = [];
+        }
+        if (!job.savedBy){
+          job.savedBy=[];
+        }
+      })
+
+    if (req.id){
+      const userId= req.id;
+      jobs.forEach(job =>{
+        job.isBookmarked = job.bookmarkedBy.includes(userId);
+        job.isSaved = job.savedBy.includes(userId);
+      })
+    }
     if (!jobs) {
       return res.status(404).json({ message: "No jobs found", status: false });
     }
@@ -116,7 +133,6 @@ export const getAdminJobs = async (req, res) => {
   }
 };
 
-
 // Bookmark a job
 export const bookmarkJob = async (req, res) => {
   try {
@@ -125,42 +141,36 @@ export const bookmarkJob = async (req, res) => {
 
     const job = await Job.findById(jobId);
     if (!job) {
-      return res.status(404).json({ 
-        message: "Job not found", 
-        status: false 
+      return res.status(404).json({
+        message: "Job not found",
+        status: false,
       });
     }
 
     // Check if already bookmarked
     const isBookmarked = job.bookmarkedBy.includes(userId);
-    
-    if (isBookmarked) {
-      // Remove bookmark
-      await Job.findByIdAndUpdate(
-        jobId,
-        { $pull: { bookmarkedBy: userId } },
-        { new: true }
-      );
-    } else {
-      // Add bookmark
-      await Job.findByIdAndUpdate(
-        jobId,
-        { $addToSet: { bookmarkedBy: userId } },
-        { new: true }
-      );
-    }
+
+    const updatedJob = await Job.findByIdandUpdate(
+      jobId,
+      isBookmarked
+      ? {$pull: {bookmarkedBy: userId}}
+      : {$addToSet: {bookmarkedBy: userId}},
+      {new: true}
+    )
+
+
 
     return res.status(200).json({
       message: isBookmarked ? "Bookmark removed" : "Job bookmarked",
       status: true,
-      isBookmarked: !isBookmarked
+      isBookmarked: !isBookmarked,
+      bookmarkedBy: updatedJob.bookmarkedBy
     });
-
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ 
-      message: "Server Error", 
-      status: false 
+    return res.status(500).json({
+      message: "Server Error",
+      status: false,
     });
   }
 };
@@ -177,22 +187,21 @@ export const getBookmarkedJobs = async (req, res) => {
       .sort({ createdAt: -1 });
 
     if (!jobs || jobs.length === 0) {
-      return res.status(404).json({ 
-        message: "No bookmarked jobs found", 
-        status: false 
+      return res.status(404).json({
+        message: "No bookmarked jobs found",
+        status: false,
       });
     }
 
-    return res.status(200).json({ 
-      jobs, 
-      status: true 
+    return res.status(200).json({
+      jobs,
+      status: true,
     });
-
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ 
-      message: "Server Error", 
-      status: false 
+    return res.status(500).json({
+      message: "Server Error",
+      status: false,
     });
   }
 };
@@ -204,9 +213,9 @@ export const saveJob = async (req, res) => {
 
     const job = await Job.findById(jobId);
     if (!job) {
-      return res.status(404).json({ 
-        message: "Job not found", 
-        status: false 
+      return res.status(404).json({
+        message: "Job not found",
+        status: false,
       });
     }
 
@@ -214,7 +223,7 @@ export const saveJob = async (req, res) => {
 
     // Check if already saved
     const isSaved = job.savedBy.includes(userId);
-    
+
     if (isSaved) {
       // Remove save
       await Job.findByIdAndUpdate(
@@ -244,14 +253,13 @@ export const saveJob = async (req, res) => {
     return res.status(200).json({
       message: isSaved ? "Removed from saved jobs" : "Job saved for later",
       status: true,
-      isSaved: !isSaved
+      isSaved: !isSaved,
     });
-
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ 
-      message: "Server Error", 
-      status: false 
+    return res.status(500).json({
+      message: "Server Error",
+      status: false,
     });
   }
 };
@@ -264,8 +272,8 @@ export const getSavedJobs = async (req, res) => {
       path: "bookmarks",
       populate: {
         path: "company",
-        select: "name" // Only get company name
-      }
+        select: "name", // Only get company name
+      },
     });
 
     if (!user) {
@@ -276,7 +284,6 @@ export const getSavedJobs = async (req, res) => {
       savedJobs: user.bookmarks,
       status: true,
     });
-
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server Error", status: false });
@@ -302,44 +309,42 @@ export const toggleSaveJob = async (req, res) => {
       }
     } else {
       // Remove from savedBy
-      job.savedBy = job.savedBy.filter(id => id.toString() !== userId.toString());
+      job.savedBy = job.savedBy.filter(
+        (id) => id.toString() !== userId.toString()
+      );
     }
 
     await job.save();
-    
-    res.json({ 
+
+    res.json({
       success: true,
       isSaved: saved,
-      savedCount: job.savedBy.length
+      savedCount: job.savedBy.length,
     });
-
   } catch (error) {
     console.error("Error saving job:", error);
     res.status(500).json({ message: error.message });
   }
-}; 
+};
 
-
-export const checkJobSavedStatus = async(req,res)=>{
-  try{
+export const checkJobSavedStatus = async (req, res) => {
+  try {
     const userId = req.user._id;
     const jobId = req.params.jobId;
 
     const job = await Job.findById(jobId);
 
-    if(!job){
-      return res.status(404).json({message: "Job not found"});
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
     }
 
     const isSaved = job.savedBy.includes(userId);
-    res.json({isSaved});
-
-
-  }catch(error){
+    res.json({ isSaved });
+  } catch (error) {
     console.error("Error checking saved status:", error);
-    res.status(500).json({message: error.message});
+    res.status(500).json({ message: error.message });
   }
-}
+};
 
 // export const getSavedJobs = async (req, res) => {
 //   try {
@@ -361,7 +366,6 @@ export const checkJobSavedStatus = async(req,res)=>{
 //     return res.status(500).json({ message: "Server Error", status: false });
 //   }
 // };
-
 
 // export const saveJob = async(req, res) =>{
 //   try{
@@ -400,4 +404,3 @@ export const checkJobSavedStatus = async(req,res)=>{
 //     res.status(500).json({ success: false, message: "Something went wrong" });
 //   }
 // };
-

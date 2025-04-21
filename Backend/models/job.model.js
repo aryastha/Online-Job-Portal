@@ -68,12 +68,14 @@ const jobSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
+        default: []
       },
     ],
     savedBy: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
+        default: []
       },
     ],
     default: [],
