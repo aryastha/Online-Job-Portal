@@ -8,8 +8,8 @@ router.route("/all/applicants").get(authenticateToken, getAllApplicants);
 router.route("/apply/:id").post(authenticateToken, applyJob);
 router.route("/get").get(authenticateToken, getAppliedJobs);
 router.route("/status/:id/update").post(authenticateToken, updateStatus);
+router.route("/upload/resume").post(authenticateToken, singleUpload,uploadResume);
 
 router.route("/:id/applicants").get(authenticateToken, getApplicants);
-router.route("/upload/resume").post(authenticateToken, singleUpload,uploadResume);
 
 export default router;

@@ -64,7 +64,7 @@ const Description = () => {
         );
       }
 
-      return uploadRes.data.res;
+      return uploadRes.data.url;
     } catch (error) {
       toast.error("Failed to upload the resume");
       throw error;
@@ -78,10 +78,16 @@ const Description = () => {
       toast.warning("Please upload your resume first");
       return;
     }
+    setIsLoading(true);
+    setIsUploading(true);
     try {
-      setIsLoading(true);
       const resumeUrl = await handleResumeUpload(resumeFile);
       console.log("Resume Url is: ", resumeUrl);
+
+      if (!resumeUrl) {
+        throw new Error("Failed to get resume URL after upload");
+      }
+      
 
       const res = await axios.post(
         `${APPLICATION_API_ENDPOINT}/apply/${jobId}`,
@@ -105,6 +111,9 @@ const Description = () => {
       toast.error(error.response?.data?.message || "Failed to apply");
     } finally {
       setIsLoading(false);
+      setIsUploading(false);
+
+      
     }
   };
 
@@ -147,6 +156,10 @@ const Description = () => {
     };
     fetchSingleJob();
   }, [jobId, dispatch, user?._id]);
+
+  useEffect(() => {
+    console.log('isApplied state changed:', isApplied);
+  }, [isApplied]);
 
   if (loading)
     return (
@@ -207,35 +220,6 @@ const Description = () => {
         </div>
       </div>
 
-      {/* // Temporary debug button - remove after testing */}
-      <button
-        onClick={async () => {
-          const testPayload = {
-            resumeUrl: "https://res.cloudinary.com/demo/resume.pdf", // Test URL
-          };
-
-          try {
-            const testRes = await axios.post(
-              `${APPLICATION_API_ENDPOINT}/apply/${jobId}`,
-              testPayload,
-              {
-                withCredentials: true,
-                headers: { "Content-Type": "application/json" },
-              }
-            );
-            console.log("Test successful:", testRes.data);
-          } catch (err) {
-            console.error("Test failed:", {
-              status: err.response?.status,
-              data: err.response?.data,
-              config: err.config,
-            });
-          }
-        }}
-        className="p-2 bg-yellow-100 text-yellow-800 mb-4"
-      >
-        Test Application Without Upload
-      </button>
 
       {/* Apply Resume Button */}
       <div className="mb-4">
@@ -272,13 +256,14 @@ const Description = () => {
           }`}
           disabled={isApplied || isLoading || isUploading}
         >
-          {isUploading
-            ? "Uploading Resume..."
-            : isLoading
-            ? "Submitting..."
-            : isApplied
-            ? "Application Submitted"
-            : "Apply Now"}
+          {(()=>{
+             if (isUploading) return "Uploading Resume...";
+             if (isLoading) return "Submitting...";
+             if (isApplied) return "Application Submitted";
+             return "Apply Now";
+
+          })()}
+      
         </Button>
       </div>
 
