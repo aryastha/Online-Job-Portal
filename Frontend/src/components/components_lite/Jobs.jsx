@@ -1,113 +1,89 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Navbar from "./Navbar.jsx";
 import FilterCard from "./FilterCard.jsx";
 import Job1 from "./Job1.jsx";
 import { useSelector, useDispatch } from "react-redux";
 import { motion } from 'framer-motion';
-import { setSearchedQuery, clearFilters } from "@/redux/jobSlice";
+import { setSearchedQuery, resetFilters } from "@/redux/jobSlice";
 
 const Jobs = () => {
-  const { allJobs, searchedQuery, filters } = useSelector((store) => store.job);
-  const [filterJobs, setFilterJobs] = useState(allJobs);
+  const { allJobs, filters } = useSelector((store) => store.job);
   const dispatch = useDispatch();
 
-  // Debugging - log filters and filtered jobs
-  useEffect(() => {
-    console.log("Current filters:", filters);
-    console.log("Filtered jobs count:", filterJobs.length);
-  }, [filters, filterJobs]);
-  // Map experience level numbers to human-readable format
-  useEffect(() => {
-    console.log("Sample job data:", allJobs.slice(0, 3)); // Log first 3 jobs
-  }, [allJobs]);
-  const experienceLevelMap = {
-    0: "Intern",
-    1: "Entry Level",
-    2: "Mid Level",
-    3: "Senior Level",
-    4: "Executive"
-  };
-
-  useEffect(() => {
-    if (!allJobs.length) return;
-  
-    const filteredJobs = allJobs.filter(job => {
-      // Text search (unchanged)
-      const matchesSearch = !searchedQuery || 
-        [job.title, job.description, job.position, job.location].some(
-          field => field?.toLowerCase().includes(searchedQuery.toLowerCase())
-        );
-      
-      // Get active filters (non-empty)
-      const activeFilters = Object.entries(filters).filter(
-        ([, value]) => value && (Array.isArray(value) ? value.length : true)
-      );
-  
-      // If no filters active, only apply search
-      if (!activeFilters.length) return matchesSearch;
-      
-      // Check if job matches ANY of the active filters (OR logic between filter types)
-      const matchesAnyFilter = activeFilters.some(([filterType, selectedValue]) => {
-        const selectedValues = Array.isArray(selectedValue) ? selectedValue : [selectedValue];
-        
-        switch(filterType) {
-          case 'location':
-            return selectedValues.some(filterValue => 
-              (job.location || '').toLowerCase().includes(filterValue.toLowerCase())
-            );
-            
-          case 'technology':
-            const techFieldsToCheck = [
-              ...(job.requirements || []),
-              job.position,
-              job.title,
-              job.description
-            ].filter(Boolean);
-  
-            return selectedValues.some(filterValue => {
-              const val = filterValue.toLowerCase();
-              return techFieldsToCheck.some(tech => 
-                tech.toLowerCase().includes(val)
-              );
-            });
-            
-          case 'experience':
-            const experienceText = experienceLevelMap[job.experienceLevel]?.toLowerCase() || '';
-            return selectedValues.some(filterValue => 
-              experienceText.includes(filterValue.toLowerCase())
-            );
-            
-          case 'salary':
-            return selectedValues.some(filterValue => checkSalaryRange(job.salary, filterValue));
-            
-          default:
-            return false;
+  // Apply filters to jobs
+  const filteredJobs = useMemo(() => {
+    return allJobs.filter(job => {
+      // Search text filter
+      if (filters.searchText) {
+        const searchLower = filters.searchText.toLowerCase();
+        if (!job.title.toLowerCase().includes(searchLower) && 
+            !job.description.toLowerCase().includes(searchLower)) {
+          return false;
         }
-      });
-      
-      // Job must match search AND at least one filter
-      return matchesSearch && (activeFilters.length ? matchesAnyFilter : true);
-    });
-  
-    setFilterJobs(filteredJobs);
-  }, [allJobs, searchedQuery, filters]);
+      }
 
-  const checkSalaryRange = (jobSalary, filterRange) => {
-    if (!jobSalary) return false;
-    
-    const jobSalaryNum = parseInt(jobSalary.replace(/[^0-9]/g, ''));
-    const [min, max] = filterRange.split(/-|\+/).map(s => {
-      const num = parseInt(s.replace(/[^0-9]/g, ''));
-      return isNaN(num) ? (s.includes('+') ? Infinity : 0) : num;
-    });
+      // Location filter
+      if (filters.locations.length > 0) {
+        if (!filters.locations.includes(job?.location)) {
+          return false;
+        }
+      }
 
-    if (filterRange.includes('+')) {
-      return jobSalaryNum >= min;
+      // Experience filter
+      if (job.experienceLevel < filters.experience[0] ||  0 ||
+          job.experienceLevel > filters.experience[1]) {
+        return false;
+      }
+
+      if (job.salary < filters.salary[0] || 
+          job.salary > filters.salary[1]) {
+        return false;
+      }
+
+      // Job type filter
+      if (filters.jobTypes.length > 0) {
+        if (!filters.jobTypes.includes(job.jobType)) {
+          return false;
+        }
+      }
+
+      // Technologies filter
+      if (filters.technologies.length > 0) {
+        const jobTechs = [...job.secondaryTechnologies || [], job.primaryTechnology];
+        if (!filters.technologies.some(tech => jobTechs.includes(tech))) {
+          return false;
+        }
+      }
+
+      // Posted within filter
+      if (filters.postedWithin) {
+        const postedDate = new Date(job.createdAt);
+        const daysAgo = (Date.now() - postedDate) / (1000 * 60 * 60 * 24);
+        if (daysAgo > filters.postedWithin) {
+          return false;
+        }
+      }
+
+      // Positions filter
+      if (filters.positions.length > 0) {
+        if (!filters.positions.includes(job.position)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [allJobs, filters]);
+
+  const hasActiveFilters = Object.values(filters).some(filter => {
+    if (Array.isArray(filter)) {
+      return filter.length > 0;
+    } else if (typeof filter === 'object' && filter !== null) {
+      // Handle range filters
+      return filter[0] !== 0 || filter[1] !== (filter === filters.experienceRange ? 10 : 200000);
     }
-    return jobSalaryNum >= min && (max ? jobSalaryNum <= max : true);
-  };
-
-  const hasActiveFilters = searchedQuery || Object.values(filters).some(Boolean);
+    return !!filter;
+  });
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
@@ -127,18 +103,15 @@ const Jobs = () => {
             <h2 className="text-xl font-bold">Available Jobs</h2>
             {hasActiveFilters && (
               <button 
-                onClick={() => {
-                  dispatch(setSearchedQuery(""));
-                  dispatch(clearFilters());
-                }}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                onClick={() => dispatch(resetFilters())}
+                className="px-4 py-2 bg-[#2C3E50] text-white rounded-lg hover:bg-blue-600 transition-colors"
               >
                 Clear All Filters
               </button>
             )}
           </div>
 
-          {filterJobs.length <= 0 ? (
+          {filteredJobs.length <= 0 ? (
             <div className="flex flex-col items-center justify-center h-full space-y-4">
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -161,11 +134,8 @@ const Jobs = () => {
               </span>
               {hasActiveFilters && (
                 <button
-                  onClick={() => {
-                    dispatch(setSearchedQuery(""));
-                    dispatch(clearFilters());
-                  }}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  onClick={() => dispatch(resetFilters())}
+                  className="px-4 py-2 bg-[#2C3E50] text-white rounded-lg hover:bg-blue-600 transition-colors"
                 >
                   Clear All Filters
                 </button>
@@ -174,9 +144,9 @@ const Jobs = () => {
           ) : (
             <div className="h-[calc(100vh-7.5rem)] overflow-y-auto pr-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filterJobs.map((job) => (
+                {filteredJobs.map((job) => (
                   <motion.div
-                    key={job._id}  // Changed from job.id to job._id for MongoDB
+                    key={job._id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
@@ -196,126 +166,3 @@ const Jobs = () => {
 };
 
 export default Jobs;
-// import React, { useState, useEffect } from "react";
-// import Navbar from "./Navbar.jsx";
-// import FilterCard from "./FilterCard.jsx";
-// import Job1 from "./Job1.jsx";
-// import { useSelector } from "react-redux";
-// import { motion } from "framer-motion";
-
-// const Jobs = () => {
-//   const { allJobs, searchedQuery } = useSelector((store) => store.job);
-//   const [filterJobs, setFilterJobs] = useState(allJobs);
-
-//   // useEffect(() => {
-//   //   if (!searchedQuery || Object.keys(searchedQuery).length === 0) {
-//   //     setFilterJobs(allJobs);
-//   //     return;
-//   //   }
-
-  
-
-//   //   // Normalize filter keys
-//   //   const filterKeys = {
-//   //     Location: "location",
-//   //     Technology: "technology",
-//   //     Experience: "experience",
-//   //     Salary: "salary",
-//   //   };
-
-//   //   const filtered = allJobs.filter((job) => {
-//   //     return Object.entries(searchedQuery).some(([filterKey, value]) => {
-//   //       const jobKey = filterKeys[filterKey]; // mapped to lowercase keys in job
-//   //       const jobValue = (job[jobKey] || "").toString().toLowerCase();
-//   //       return jobValue.includes(value.toLowerCase());
-//   //     });
-//   //   });
-
-//   //   setFilterJobs(filtered);
-//   // }, [allJobs, searchedQuery]);
-
-//   // Add this to your existing Jobs component
-// useEffect(() => {
-//   if (!filters || Object.keys(filters).length === 0) {
-//     setFilterJobs(allJobs);
-//     return;
-//   }
-
-//   const filteredJobs = allJobs.filter((job) => {
-//     return Object.entries(filters).every(([key, value]) => {
-//       if (!value) return true; // Skip if filter value is empty
-      
-//       const jobValue = job[key]?.toString().toLowerCase();
-//       const filterValue = value.toString().toLowerCase();
-      
-//       // Special handling for salary ranges
-//       if (key === 'salary') {
-//         return checkSalaryRange(job.salary, filterValue);
-//       }
-      
-//       return jobValue?.includes(filterValue);
-//     });
-//   });
-
-//   setFilterJobs(filteredJobs);
-// }, [allJobs, filters]);
-
-// // Helper function for salary range comparison
-// const checkSalaryRange = (jobSalary, filterRange) => {
-//   if (!jobSalary) return false;
-  
-//   const jobSalaryNum = parseInt(jobSalary.replace(/[^0-9]/g, ''));
-//   const [min, max] = filterRange.split('-').map(s => {
-//     const num = parseInt(s.replace(/[^0-9]/g, ''));
-//     return isNaN(num) ? (s.includes('+') ? Infinity : 0) : num;
-//   });
-
-//   if (filterRange.includes('+')) {
-//     return jobSalaryNum >= min;
-//   }
-//   return jobSalaryNum >= min && jobSalaryNum <= max;
-// };
-
-//   return (
-//     <div className="h-screen flex flex-col bg-gray-50">
-//       <Navbar />
-//       <div className="flex flex-1 max-w-7xl w-full mx-auto px-4 py-6 gap-6">
-//         {/* Filter Section */}
-//         <div className="hidden md:block w-64 flex-shrink-0">
-//           <div className="sticky top-6 h-[calc(100vh-7.5rem)] overflow-y-auto">
-//             <FilterCard />
-//           </div>
-//         </div>
-
-//         {/* Jobs List Section */}
-//         <div className="flex-1">
-//           {filterJobs.length === 0 ? (
-//             <div className="flex items-center justify-center h-full">
-//               <span className="text-gray-600 text-lg">No jobs found matching your criteria</span>
-//             </div>
-//           ) : (
-//             <div className="h-[calc(100vh-7.5rem)] overflow-y-auto pr-2">
-//               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-//                 {filterJobs.map((job) => (
-//                   <motion.div
-//                     key={job._id}
-//                     initial={{ opacity: 0, y: 20 }}
-//                     animate={{ opacity: 1, y: 0 }}
-//                     exit={{ opacity: 0, y: -20 }}
-//                     transition={{ duration: 0.3 }}
-//                     className="h-full"
-//                   >
-//                     <Job1 job={job} />
-//                   </motion.div>
-//                 ))}
-//               </div>
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Jobs;
-

@@ -1,142 +1,272 @@
-// import React, { useState, useEffect } from "react";
-// import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-// import { useDispatch } from "react-redux";
-// import { setSearchedQuery } from "@/redux/jobSlice";
-
-// const filterData = [
-//   {
-//     filterType: "Location",
-//     array: ["Kathmandu", "Lalitpur", "Naxal", "Bhaktapur", "New Baneshwor", "Naikap", "Ekantakuna"],
-//   },
-//   {
-//     filterType: "Technology",
-//     array: ["React", "Backend", "Mobile", "Digital", "Marketing", "SEO"],
-//   },
-//   {
-//     filterType: "Experience",
-//     array: ["intern", "0-1 year", "1-3 years", "4-6 years"],
-//   },
-//   {
-//     filterType: "Salary",
-//     array: ["0-15k", "15k - 30k", "30k - 50k", "50k - 80k", "80k - 100k", "100k - 200k"],
-//   },
-// ];
-
-// const FilterCard = () => {
-//   const [filters, setFilters] = useState({});
-//   const dispatch = useDispatch();
-
-//   const handleChange = (filterType, value) => {
-//     setFilters((prev) => ({ ...prev, [filterType]: value }));
-//   };
-
-//   useEffect(() => {
-//     dispatch(setSearchedQuery(filters));
-//   }, [filters]);
-
-//   return (
-//     <div className="w-full bg-white rounded-lg shadow-md p-4">
-//       <h1 className="font-bold text-lg mb-3 text-gray-800">Filter Jobs</h1>
-//       <hr className="border-gray-200 mb-3" />
-//       {filterData.map((data, index) => (
-//         <RadioGroup
-//           key={index}
-//           value={filters[data.filterType] || ""}
-//           onValueChange={(val) => handleChange(data.filterType, val)}
-//         >
-//           <div className="mb-4">
-//             <h2 className="font-semibold text-base mb-2 text-gray-700">{data.filterType}</h2>
-//             {data.array.map((item, indx) => {
-//               const itemId = `Id${index}-${indx}`;
-//               return (
-//                 <div key={itemId} className="flex items-center space-x-2 my-1 hover:bg-gray-50 p-1 rounded-lg transition-colors duration-200">
-//                   <RadioGroupItem value={item} id={itemId} className="w-4 h-4 text-blue-600 border-2 border-gray-300" />
-//                   <label htmlFor={itemId} className="text-sm text-gray-600">{item}</label>
-//                 </div>
-//               );
-//             })}
-//           </div>
-//         </RadioGroup>
-//       ))}
-//     </div>
-//   );
-// };
-
-// export default FilterCard;
-
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Slider } from "../ui/slider";
+import { Checkbox } from "../ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { useDispatch } from "react-redux";
-import { setFilters } from "@/redux/jobSlice"; // Changed from setSearchedQuery to setFilters
-
-const filterData = [
-  {
-    filterType: "location",
-    array: ["Kathmandu", "Lalitpur", "Bhaktapur", "Remote"],
-  },
-  {
-    filterType: "technology",
-    array: ["React", "Node", "Python", "Java", "Full Stack", "Mobile", "SEO"],
-  },
-  {
-    filterType: "experience",
-    array: ["Intern", "Entry Level", "Mid Level", "Senior Level"],
-  },
-  {
-    filterType: "salary",
-    array: ["0-15k", "15k-30k", "30k-50k", "50k-80k", "80k+"],
-  },
-];
+import { updateFilter, resetFilters } from "@/redux/jobSlice";
 
 const FilterCard = () => {
-  const [selectedFilters, setSelectedFilters] = useState({});
   const dispatch = useDispatch();
+  const { filters } = useSelector((store) => store.job);
 
-  const handleFilterChange = (filterType, value) => {
-    setSelectedFilters(prev => {
-      const newFilters = { ...prev, 
-        [filterType]: prev[filterType] === value ? "" : value
-       };
-       console.log("Updated filters:", newFilters);
-      return newFilters;
-    });
+  const locationOptions = [
+    "Kathmandu",
+    "Lalitpur",
+    "Bhaktapur",
+    "Remote",
+    "Other",
+  ];
+  const jobTypeOptions = [
+    "Full-time",
+    "Part-time",
+    "Freelance",
+    "Remote",
+    "Internship",
+  ];
+  const technologyOptions = [
+    "React",
+    "Node.js",
+    "Python",
+    "Java",
+    "MongoDB",
+    "MySQL",
+    "AWS",
+  ];
+  const positionOptions = [
+    "Frontend",
+    "Marketing",
+    "Mobile",
+    "SEO",
+    "Backend",
+    "Fullstack",
+    "DevOps",
+    "Data Science",
+  ];
+  const postedWithinOptions = [
+    { label: "Today", value: 1 },
+    { label: "Last 3 days", value: 3 },
+    { label: "Last 7 days", value: 7 },
+    { label: "Last 30 days", value: 30 },
+  ];
+
+  const handleCheckboxChange = (filterType, value, checked) => {
+    const currentValues = [...filters[filterType]];
+    if (checked) {
+      dispatch(updateFilter({ filterType, value: [...currentValues, value] }));
+    } else {
+      dispatch(
+        updateFilter({
+          filterType,
+          value: currentValues.filter((v) => v !== value),
+        })
+      );
+    }
   };
 
-  useEffect(() => {
-
-    dispatch(setFilters(selectedFilters)); // Dispatch the complete filters object
-    
-  }, [selectedFilters, dispatch]);
+  const handleSliderChange = (filterType, value) => {
+    dispatch(updateFilter({ filterType, value }));
+  };
 
   return (
-    <div className="w-full bg-white rounded-lg shadow-md p-4">
-      <h1 className="font-bold text-lg mb-3 text-gray-800">Filter Jobs</h1>
-      <hr className="border-gray-200 mb-3" />
-      {filterData.map((data, index) => (
-        <RadioGroup
-          key={index}
-          value={selectedFilters[data.filterType] || ""}
-          onValueChange={(val) => handleFilterChange(data.filterType, val)}
+    <div className="w-full bg-white rounded-lg shadow-md p-4 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="font-bold text-lg text-gray-800">Filter Jobs</h1>
+        <button
+          onClick={() => dispatch(resetFilters())}
+          className="text-sm text-blue-600 hover:underline"
         >
-          <div className="mb-4">
-            <h2 className="font-semibold text-base mb-2 text-gray-700">
-              {data.filterType.charAt(0).toUpperCase() + data.filterType.slice(1)}
-            </h2>
-            {data.array.map((item, indx) => (
-              <div key={`${data.filterType}-${indx}`} className="flex items-center space-x-2 my-1 hover:bg-gray-50 p-1 rounded-lg">
-                <RadioGroupItem 
-                  value={item} 
-                  id={`${data.filterType}-${indx}`}
-                  className="w-4 h-4 text-blue-600 border-2 border-gray-300" 
-                />
-                <label htmlFor={`${data.filterType}-${indx}`} className="text-sm text-gray-600">
-                  {item}
-                </label>
-              </div>
-            ))}
-          </div>
+          Reset All
+        </button>
+      </div>
+
+      {/* Search Bar */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Search
+        </label>
+        <input
+          type="text"
+          value={filters.searchText}
+          onChange={(e) =>
+            dispatch(
+              updateFilter({ filterType: "searchText", value: e.target.value })
+            )
+          }
+          placeholder="Job title, skills, company"
+          className="w-full p-2 border border-gray-300 rounded-md"
+        />
+      </div>
+
+      {/* Experience Slider */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Experience: {filters.experience[0]} - {filters.experience[1]} years
+        </label>
+        <Slider
+          min={0}
+          max={10}
+          step={1}
+          value={filters.experience}
+          onValueChange={(value) => handleSliderChange("experience", value)}
+          className="w-full"
+        />
+      </div>
+
+      {/* Salary Slider */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Salary: NPR {filters.salary[0].toLocaleString()} -{" "}
+          {filters.salary[1].toLocaleString()}
+        </label>
+        <Slider
+          min={0}
+          max={200000}
+          step={10000}
+          value={filters.salary}
+          onValueChange={(value) => handleSliderChange("salary", value)}
+          className="w-full"
+        />
+      </div>
+
+      {/* Location Checkboxes */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Location
+        </label>
+        <div className="space-y-2">
+          {locationOptions.map((location) => (
+            <div key={location} className="flex items-center">
+              <Checkbox
+                id={`location-${location}`}
+                checked={filters.locations.includes(location)}
+                onCheckedChange={(checked) =>
+                  handleCheckboxChange("locations", location, checked)
+                }
+              />
+              <label
+                htmlFor={`location-${location}`}
+                className="ml-2 text-sm text-gray-600"
+              >
+                {location}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Job Type Checkboxes */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Job Type
+        </label>
+        <div className="space-y-2">
+          {jobTypeOptions.map((type) => (
+            <div key={type} className="flex items-center">
+              <Checkbox
+                id={`type-${type}`}
+                checked={filters.jobTypes.includes(type)}
+                onCheckedChange={(checked) =>
+                  handleCheckboxChange("jobTypes", type, checked)
+                }
+              />
+              <label
+                htmlFor={`type-${type}`}
+                className="ml-2 text-sm text-gray-600"
+              >
+                {type}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Technologies Checkboxes */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Technologies
+        </label>
+        <div className="space-y-2">
+          {technologyOptions.map((tech) => (
+            <div key={tech} className="flex items-center">
+              <Checkbox
+                id={`tech-${tech}`}
+                checked={filters.technologies.includes(tech)}
+                onCheckedChange={(checked) =>
+                  handleCheckboxChange("technologies", tech, checked)
+                }
+              />
+              <label
+                htmlFor={`tech-${tech}`}
+                className="ml-2 text-sm text-gray-600"
+              >
+                {tech}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Positions Checkboxes */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Positions
+        </label>
+        <div className="space-y-2">
+          {positionOptions.map((position) => (
+            <div key={position} className="flex items-center">
+              <Checkbox
+                id={`position-${position}`}
+                checked={filters.positions.includes(position)}
+                onCheckedChange={(checked) =>
+                  handleCheckboxChange("positions", position, checked)
+                }
+              />
+              <label
+                htmlFor={`position-${position}`}
+                className="ml-2 text-sm text-gray-600"
+              >
+                {position}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Posted Within Radio */}
+      {/* Posted Within Radio */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Posted Within
+        </label>
+        <RadioGroup
+          value={filters.postedWithin?.toString() || ""}
+          onValueChange={(value) =>
+            dispatch(
+              updateFilter({
+                filterType: "postedWithin",
+                value: Number(value),
+              })
+            )
+          }
+          className="space-y-2"
+        >
+          {postedWithinOptions.map((option) => (
+            <div key={option.value} className="flex items-center space-x-2">
+              <RadioGroupItem
+                value={option.value.toString()}
+                id={`posted-${option.value}`}
+                className="h-4 w-4 border border-gray-300 text-primary focus:ring-primary"
+              />
+              <label
+                htmlFor={`posted-${option.value}`}
+                className="text-sm font-medium leading-none text-gray-700 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                {option.label}
+              </label>
+            </div>
+          ))}
         </RadioGroup>
-      ))}
+      </div>
     </div>
   );
 };
