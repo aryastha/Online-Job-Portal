@@ -158,8 +158,6 @@ export const bookmarkJob = async (req, res) => {
       {new: true}
     )
 
-
-
     return res.status(200).json({
       message: isBookmarked ? "Bookmark removed" : "Job bookmarked",
       status: true,

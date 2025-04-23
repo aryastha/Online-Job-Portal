@@ -14,15 +14,19 @@ const Jobs = () => {
   const filteredJobs = useMemo(() => {
     return allJobs.filter((job) => {
       // Search text filter
-      if (filters.searchText) {
-        const searchLower = filters.searchText.toLowerCase();
-        if (
-          !job.title.toLowerCase().includes(searchLower) &&
-          !job.description.toLowerCase().includes(searchLower)
-        ) {
-          return false;
-        }
-      }
+if (filters.searchText) {
+  const searchLower = filters.searchText.toLowerCase();
+  const titleMatch = job.title?.toLowerCase().includes(searchLower);
+  const descMatch = job.description?.toLowerCase().includes(searchLower);
+  const companyMatch = job.company?.name.toLowerCase().includes(searchLower);
+  const skillsMatch = (job.skills || [])
+    .some(skill => skill.toLowerCase().includes(searchLower));
+
+  if (!titleMatch && !descMatch && !companyMatch && !skillsMatch) {
+    return false;
+  }
+}
+
 
       // Location filter
       if ((filters.locations || []).length > 0) {
