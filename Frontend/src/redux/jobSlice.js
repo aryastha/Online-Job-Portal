@@ -12,8 +12,8 @@ const jobSlice = createSlice({
     filters: {
       // New filters state to store multiple filter criteria
       searchText: "",
-      locations: "",
-      technology: "",
+      locations: [],
+      technology: [],
       experience: [0, 10],
       salary: [0, 200000000],
       jobTypes: [],
