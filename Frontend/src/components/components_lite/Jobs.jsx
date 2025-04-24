@@ -10,27 +10,45 @@ const Jobs = () => {
   const { allJobs, filters } = useSelector((store) => store.job);
   const dispatch = useDispatch();
 
+  //Inclusive matching
+  const matchesInclusively = (filterValues, jobValue) => {
+    if (!filterValues || filterValues.length === 0) return true;
+    if (!jobValue) return false;
+
+    const jobValueLower = jobValue.toString().toLowerCase().replace(/\s+/g, "");
+    return filterValues.some((filterVal) => {
+      const filterValLower = filterVal.toLowerCase().replace(/\s+/g, "");
+      return (
+        jobValueLower.includes(filterValLower) ||
+        jobValueLower.startsWith(filterValLower) ||
+        jobValueLower.endsWith(filterValLower)
+      );
+    });
+  };
+
   // Apply filters to jobs
   const filteredJobs = useMemo(() => {
     return allJobs.filter((job) => {
       // Search text filter
-if (filters.searchText) {
-  const searchLower = filters.searchText.toLowerCase();
-  const titleMatch = job.title?.toLowerCase().includes(searchLower);
-  const descMatch = job.description?.toLowerCase().includes(searchLower);
-  const companyMatch = job.company?.name.toLowerCase().includes(searchLower);
-  const skillsMatch = (job.skills || [])
-    .some(skill => skill.toLowerCase().includes(searchLower));
+      if (filters.searchText) {
+        const searchLower = filters.searchText.toLowerCase();
+        const titleMatch = job.title?.toLowerCase().includes(searchLower);
+        const descMatch = job.description?.toLowerCase().includes(searchLower);
+        const companyMatch = job.company?.name
+          .toLowerCase()
+          .includes(searchLower);
+        const skillsMatch = (job.skills || []).some((skill) =>
+          skill.toLowerCase().includes(searchLower)
+        );
 
-  if (!titleMatch && !descMatch && !companyMatch && !skillsMatch) {
-    return false;
-  }
-}
-
+        if (!titleMatch && !descMatch && !companyMatch && !skillsMatch) {
+          return false;
+        }
+      }
 
       // Location filter
       if ((filters.locations || []).length > 0) {
-        if (!filters.locations.includes(job?.location)) {
+        if (!matchesInclusively(filters.locations, job?.location)) {
           return false;
         }
       }
@@ -52,22 +70,26 @@ if (filters.searchText) {
 
       // Job type filter
       if ((filters.jobTypes || []).length > 0) {
-        if (!filters.jobTypes.includes(job.jobType)) {
+        if (!matchesInclusively(filters.jobTypes, job.jobType)) {
           return false;
         }
       }
 
       // Technologies filter
-    if ((filters.technologies || []).length > 0) {
-      const textFields = `${job.title} ${job.description} ${(job.requirements || []).join(" ")}`.toLowerCase();
-      const matchedTech = filters.technologies.some(tech => {
-        const techLower = tech.toLowerCase();
-        return textFields.includes(techLower);
-      });
-      if (!matchedTech) {
-        return false;
+      if ((filters.technologies || []).length > 0) {
+        const textFields = `${job.title} ${job.description} ${(
+          job.requirements || []
+        ).join(" ")}`.toLowerCase();
+        const matchedTech = filters.technologies.some((tech) => {
+          const techLower = tech.toLowerCase().replace(/\s+/g, '');
+          return textFields.includes(techLower) ||
+          textFields.includes(techLower.replace('-', '')) || 
+          textFields.includes(techLower.replace(' ', ''));
+        });
+        if (!matchedTech) {
+          return false;
+        }
       }
-    }
 
       // Posted within filter
       if (filters.postedWithin) {
@@ -80,10 +102,14 @@ if (filters.searchText) {
 
       // Positions filter
       if ((filters.positions || []).length > 0) {
-        const textFields = `${job.title} ${job.description} ${(job.requirements || []).join(" ")}`.toLowerCase();
-        const matchedPosition = filters.positions.some(position => {
-          const positionLower = position.toLowerCase();
-          return textFields.includes(positionLower);
+        const textFields = `${job.title} ${job.description} ${(
+          job.requirements || []
+        ).join(" ")}`.toLowerCase();
+        const matchedPosition = filters.positions.some((position) => {
+          const positionLower = position.toLowerCase().replace(/\s+/g, '');
+          return textFields.includes(positionLower) ||
+          textFields.includes(positionLower.replace("-", "")) ||
+          textFields.includes(positionLower.replace(" ", ""));
         });
         if (!matchedPosition) {
           return false;
