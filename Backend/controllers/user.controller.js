@@ -320,7 +320,7 @@ export const uploadResume = async (req, res) => {
     const fileUri = getDataUri(req.file);
     const result = await cloudinary.uploader.upload(fileUri.content, {
       folder: "resumes",
-      resource_type: 'auto'
+      resource_type: 'raw'
     });
 
     user.profile.resume = result.secure_url;
