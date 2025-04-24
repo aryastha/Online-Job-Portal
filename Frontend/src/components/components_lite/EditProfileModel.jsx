@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,35 +17,52 @@ import axios from "axios";
 
 const EditProfileModel = ({ open, setOpen }) => {
   const [loading, setLoading] = useState(false);
+  const [fileUploading, setFileUploading] = useState(false);
   const { user } = useSelector((store) => store.auth);
-  
+
   const [input, setInput] = useState({
-    fullname: user?.fullname || "",
-    email: user?.email || "",
-    phoneNumber: user?.phoneNumber || "",
-    bio: user?.profile?.bio || "",
-    skills: user?.profile?.skills?.join(", ") || "",
-    file: user?.profile?.resume || null,
-    profilePicture: null,
+    fullname: "",
+    email: "",
+    phoneNumber: "",
+    bio: "",
+    skills: "",
   });
 
-  const [previewImage, setPreviewImage] = useState(user?.profile?.profilePicture || null);
+  const [resumeFile, setResumeFile] = useState(null);
+  const [profilePhotoFile, setProfilePhotoFile] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
   const dispatch = useDispatch();
+
+  // Initialize form with user data
+  useEffect(() => {
+    if (user) {
+      setInput({
+        fullname: user?.fullname || "",
+        email: user?.email || "",
+        phoneNumber: user?.phoneNumber || "",
+        bio: user?.profile?.bio || "",
+        skills: user?.profile?.skills?.join(", ") || "",
+      });
+      setPreviewImage(user?.profile?.profilePhoto || null);
+    }
+  }, [user, open]);
 
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
 
-  const FileChangehandler = (e) => {
-    const file = e.target.files?.[0];
-    setInput({ ...input, file });
-  };
-
-  const handleProfilePictureChange = (e) => {
+  const handleResumeChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      setInput({ ...input, profilePicture: file });
+      setResumeFile(file);
+    }
+  };
+
+  const handleProfilePhotoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProfilePhotoFile(file);
       // Create preview URL
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -55,56 +72,156 @@ const EditProfileModel = ({ open, setOpen }) => {
     }
   };
 
+  const uploadProfilePhoto = async () => {
+    if (!profilePhotoFile) return true;
+
+    setFileUploading(true);
+    const formData = new FormData();
+    formData.append("file", profilePhotoFile);
+
+    try {
+      const res = await axios.post(
+        `${USER_API_ENDPOINT}/profile/upload-photo`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (res.data.success) {
+        toast.success("Profile photo updated successfully");
+        dispatch(
+          setUser({
+            ...user,
+            profile: {
+              ...user.profile,
+              profilePhoto: res.data.profilePhoto,
+            },
+          })
+        );
+        setProfilePhotoFile(null); // Clear after successful upload =
+        return true;
+      }
+    } catch (error) {
+      console.error("Photo upload error:", error);
+      toast.error(
+        error.response?.data?.message || "Profile photo upload failed"
+      );
+      return false;
+    } finally {
+      setFileUploading(false);
+    }
+  };
+
+  const uploadResume = async () => {
+    if (!resumeFile) return true;
+
+    setFileUploading(true);
+    const formData = new FormData();
+    formData.append("file", resumeFile);
+
+    try {
+      const res = await axios.post(
+        `${USER_API_ENDPOINT}/profile/upload-resume`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (res.data.success) {
+        toast.success("Resume uploaded successfully");
+        dispatch(
+          setUser({
+            ...user,
+            profile: {
+              ...user.profile,
+              resume: res.data.resumeUrl,
+              resumeOriginalname: resumeFile.name,
+            },
+          })
+        );
+        setResumeFile(null); // Clear after successful upload
+        return true;
+      }
+    } catch (error) {
+      console.error("Resume upload error:", error);
+      toast.error(error.response?.data?.message || "Resume upload failed");
+      return false;
+    } finally {
+      setFileUploading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-  
-    const formData = new FormData();
-    formData.append("fullname", input.fullname);
-    formData.append("email", input.email);
-    formData.append("phoneNumber", input.phoneNumber);
-    formData.append("bio", input.bio);
-    formData.append("skills", input.skills);
-    
-    // Append files with correct field names
-    if (input.file) formData.append("file", input.file);
-    if (input.profilePicture) formData.append("profilePicture", input.profilePicture);
-  
-    try {
-      const res = await axios.post(`${USER_API_ENDPOINT}/profile/update`, formData, {
-        headers: { 
-          "Content-Type": "multipart/form-data",
-        },
-        withCredentials: true,
-      });
-      
-      if (res.data.success) {
-        toast.success(res.data.message);
-        dispatch(setUser(res.data.user));
-        setOpen(false);
-      }
-    } catch (error) {
-      console.error("Update error:", error);
-      toast.error(error.response?.data?.message || "Profile update failed");
-    } finally {
-      setLoading(false);
+
+    // First handle file uploads if needed
+    let photoUploadSuccess = true;
+    let resumeUploadSuccess = true;
+
+    if (profilePhotoFile) {
+      photoUploadSuccess = await uploadProfilePhoto();
     }
+
+    if (resumeFile) {
+      resumeUploadSuccess = await uploadResume();
+    }
+
+    // Only proceed with profile update if file uploads were successful
+    if (photoUploadSuccess && resumeUploadSuccess) {
+      try {
+        const res = await axios.post(
+          `${USER_API_ENDPOINT}/profile/update`,
+          {
+            fullname: input.fullname,
+            email: input.email,
+            phoneNumber: input.phoneNumber,
+            bio: input.bio,
+            skills: input.skills,
+          },
+          {
+            withCredentials: true,
+          }
+        );
+
+        if (res.data.success) {
+          toast.success(res.data.message);
+          dispatch(setUser(res.data.user));
+          setOpen(false);
+        }
+      } catch (error) {
+        console.error("Profile update error:", error);
+        toast.error(error.response?.data?.message || "Profile update failed");
+      }
+    }
+
+    setLoading(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[500px] bg-white shadow-lg rounded-lg p-6">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-gray-800">Edit Profile</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-gray-800">
+            Edit Profile
+          </DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex flex-col items-center gap-3 mb-4">
             <div className="relative">
               {previewImage ? (
-                <img 
-                  src={previewImage} 
-                  alt="Profile Preview" 
+                <img
+                  src={previewImage}
+                  alt="Profile Preview"
                   className="w-24 h-24 rounded-full object-cover border-2 border-gray-300"
                 />
               ) : (
@@ -112,29 +229,48 @@ const EditProfileModel = ({ open, setOpen }) => {
                   <ImageIcon className="w-12 h-12 text-gray-400" />
                 </div>
               )}
-              <label 
-                htmlFor="profilePicture"
+              <label
+                htmlFor="profilePhoto"
                 className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded-full cursor-pointer hover:bg-blue-600"
               >
                 <input
                   type="file"
-                  id="profilePicture"
-                  name="profilePicture"
+                  id="profilePhoto"
+                  name="profilePhoto"
                   accept="image/*"
-                  onChange={handleProfilePictureChange}
+                  onChange={handleProfilePhotoChange}
                   className="hidden"
+                  disabled={fileUploading}
                 />
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </label>
             </div>
-            <p className="text-sm text-gray-500">Click on the icon to change profile picture</p>
+            <p className="text-sm text-gray-500">
+              Click on the icon to change profile picture
+            </p>
+            {profilePhotoFile && (
+              <p className="text-sm text-green-600">
+                New photo selected (will be saved when you click Update Profile)
+              </p>
+            )}
           </div>
 
           <div className="grid gap-3">
             <div className="flex flex-col gap-1">
-              <Label htmlFor="fullname" className="text-gray-700">Full Name</Label>
+              <Label htmlFor="fullname" className="text-gray-700">
+                Full Name
+              </Label>
               <input
                 type="text"
                 id="fullname"
@@ -147,7 +283,9 @@ const EditProfileModel = ({ open, setOpen }) => {
             </div>
 
             <div className="flex flex-col gap-1">
-              <Label htmlFor="email" className="text-gray-700">Email</Label>
+              <Label htmlFor="email" className="text-gray-700">
+                Email
+              </Label>
               <input
                 type="email"
                 id="email"
@@ -158,9 +296,11 @@ const EditProfileModel = ({ open, setOpen }) => {
                 required
               />
             </div>
-            
+
             <div className="flex flex-col gap-1">
-              <Label htmlFor="phoneNumber" className="text-gray-700">Contact Number</Label>
+              <Label htmlFor="phoneNumber" className="text-gray-700">
+                Contact Number
+              </Label>
               <input
                 type="text"
                 id="phoneNumber"
@@ -173,7 +313,9 @@ const EditProfileModel = ({ open, setOpen }) => {
             </div>
 
             <div className="flex flex-col gap-1">
-              <Label htmlFor="bio" className="text-gray-700">Bio</Label>
+              <Label htmlFor="bio" className="text-gray-700">
+                Bio
+              </Label>
               <textarea
                 id="bio"
                 name="bio"
@@ -185,7 +327,9 @@ const EditProfileModel = ({ open, setOpen }) => {
             </div>
 
             <div className="flex flex-col gap-1">
-              <Label htmlFor="skills" className="text-gray-700">Skills (comma-separated)</Label>
+              <Label htmlFor="skills" className="text-gray-700">
+                Skills (comma-separated)
+              </Label>
               <input
                 type="text"
                 id="skills"
@@ -198,14 +342,41 @@ const EditProfileModel = ({ open, setOpen }) => {
           </div>
 
           <div className="flex items-center gap-2">
-            <Label htmlFor="file" className="text-gray-700">Resume</Label>
-            <input type="file" id="file" name="file" onChange={FileChangehandler} className="p-2" />
-            {input.file && <FileText className="text-blue-500" />}
+            <Label htmlFor="resume" className="text-gray-700">
+              Resume
+            </Label>
+            <input
+              type="file"
+              id="resume"
+              name="resume"
+              onChange={handleResumeChange}
+              className="p-2"
+              disabled={fileUploading}
+            />
+            {user?.profile?.resume && !resumeFile && (
+              <FileText className="text-blue-500" />
+            )}
+            {resumeFile && (
+              <span className="text-sm text-green-600">
+                New resume selected
+              </span>
+            )}
           </div>
 
           <DialogFooter>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Update Profile"}
+            <Button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+              disabled={loading || fileUploading}
+            >
+              {loading || fileUploading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {fileUploading ? "Uploading files..." : "Updating profile..."}
+                </>
+              ) : (
+                "Update Profile"
+              )}
             </Button>
           </DialogFooter>
         </form>

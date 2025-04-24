@@ -49,9 +49,9 @@ export const register = async (req, res) => {
       password: hashedPassword,
       phoneNumber,
       role,
-      profile:{
+      profile: {
         profilePhoto: cloudResponse.secure_url,
-      }
+      },
     });
 
     await newUser.save();
@@ -157,37 +157,98 @@ export const logout = async (req, res) => {
     });
   }
 };
+
+// export const updateProfile = async (req, res) => {
+//   try {
+//     const { fullname, email, phoneNumber, bio, skills } = req.body;
+//     const userId = req.id;
+//     const user = await User.findById(userId);
+
+//     if (!user) {
+//       return res
+//         .status(404)
+//         .json({ message: "User not found", success: false });
+//     }
+
+//     // Process profile photo
+//     if (req.file && req.file.fieldname === 'profilePhoto') {
+//       const fileUri = getDataUri(req.file);
+//       const result = await cloudinary.uploader.upload(fileUri.content, {
+//         folder: 'profile_photos'
+//       });
+//       user.profile.profilePhoto = result.secure_url;
+//     }
+
+//     // Process resume
+//     if (files?.file) {
+//       const resume = files.file[0];
+//       const fileUri = getDataUri(resume);
+//       const result = await cloudinary.uploader.upload(fileUri.content, {
+//         folder: "resumes",
+//       });
+//       user.profile.resume = result.secure_url;
+//       user.profile.resumeOriginalname = resume.originalname;
+//     }
+
+//     // Update other fields
+//     if (fullname) user.fullname = fullname;
+//     if (email) user.email = email;
+//     if (phoneNumber) user.phoneNumber = phoneNumber;
+//     if (bio) user.profile.bio = bio;
+//     if (skills) user.profile.skills = skills.split(",").map((s) => s.trim());
+
+//     await user.save();
+
+//     //return the updated user
+//     const updatedUser = {
+//       _id: user._id,
+//       fullname: user.fullname,
+//       email: user.email,
+//       phoneNumber: user.phoneNumber,
+//       role: user.role,
+//       profile: {
+//         bio: user.profile.bio,
+//         skills: user.profile.skills,
+//         resume: user.profile.resume,
+//         resumeOriginalname: user.profile.resumeOriginalname,
+//         profilePhoto: user.profile.profilePhoto,
+//         company: user.profile.company
+//       }
+//     };
+
+//     return res.status(200).json({
+//       message: "Profile updated successfully",
+//       user: updatedUser,
+//       success: true,
+//     });
+//   } catch (error) {
+//     console.error("Profile update error:", error);
+//     return res.status(500).json({
+//       message: error.message || "Profile update failed",
+//       success: false,
+//     });
+//   }
+// };
+
 export const updateProfile = async (req, res) => {
   try {
-    const { fullname, email, phoneNumber, bio, skills} = req.body;
-    const files = req.files; // Contains both files
-    
+    const { fullname, email, phoneNumber, bio, skills } = req.body;
     const userId = req.id;
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found", success: false });
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
     }
 
-    // Process profile picture
-    if (files?.profilePicture) {
-      const profilePhotoFile= files.profilePicture[0];
-      const fileUri = getDataUri(profilePhotoFile);
+    // Process profile photo if provided in the request
+    if (req.file && req.file.fieldname === "profilePhoto") {
+      const fileUri = getDataUri(req.file);
       const result = await cloudinary.uploader.upload(fileUri.content, {
-        folder: 'profile_pictures'
+        folder: "profile_photos",
       });
       user.profile.profilePhoto = result.secure_url;
-    }
-
-    // Process resume
-    if (files?.file) {
-      const resume = files.file[0];
-      const fileUri = getDataUri(resume);
-      const result = await cloudinary.uploader.upload(fileUri.content, {
-        folder: 'resumes'
-      });
-      user.profile.resume = result.secure_url;
-      user.profile.resumeOriginalname = resume.originalname;
     }
 
     // Update other fields
@@ -195,26 +256,130 @@ export const updateProfile = async (req, res) => {
     if (email) user.email = email;
     if (phoneNumber) user.phoneNumber = phoneNumber;
     if (bio) user.profile.bio = bio;
-    if (skills) user.profile.skills = skills.split(',').map(s => s.trim());
+    if (skills) user.profile.skills = skills.split(",").map((s) => s.trim());
 
     await user.save();
 
+    const updatedUser = {
+      _id: user._id,
+      fullname: user.fullname,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      role: user.role,
+      profile: {
+        bio: user.profile.bio,
+        skills: user.profile.skills,
+        resume: user.profile.resume,
+        resumeOriginalname: user.profile.resumeOriginalname,
+        profilePhoto: user.profile.profilePhoto,
+        company: user.profile.company,
+      },
+    };
+
     return res.status(200).json({
       message: "Profile updated successfully",
-      user: {
-        _id: user._id,
-        fullname: user.fullname,
-        email: user.email,
-        profile: user.profile,
-      },
-      success: true
+      user: updatedUser,
+      success: true,
     });
-
   } catch (error) {
     console.error("Profile update error:", error);
     return res.status(500).json({
       message: error.message || "Profile update failed",
-      success: false
+      success: false,
+    });
+  }
+};
+
+//upload resume
+export const uploadResume = async (req, res) => {
+  try {
+    const userId = req.id;
+    const user = await User.findById(userId);
+
+    if (!req.file) {
+      return res.status(400).json({
+        message: "No file uploaded",
+        success: false,
+      });
+    }
+
+    // Validate file type
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
+    if (!allowedTypes.includes(req.file.mimetype)) {
+      return res.status(400).json({
+        message: "Only PDF or Word documents are allowed",
+        success: false,
+      });
+    }
+
+    const fileUri = getDataUri(req.file);
+    const result = await cloudinary.uploader.upload(fileUri.content, {
+      folder: "resumes",
+      resource_type: 'auto'
+    });
+
+    user.profile.resume = result.secure_url;
+    user.profile.resumeOriginalname = req.file.originalname;
+    await user.save();
+
+    return res.status(200).json({
+      message: "Resume uploaded successfully",
+      resumeUrl: result.secure_url,
+      success: true,
+    });
+  } catch (error) {
+    console.error("Resume upload error:", error);
+    return res.status(500).json({
+      message: error.message || "Resume upload failed",
+      success: false,
+    });
+  }
+};
+//upload profile
+export const uploadProfilePhoto = async (req, res) => {
+  try {
+    const userId = req.id;
+    const user = await User.findById(userId);
+
+    if (!req.file) {
+      return res.status(400).json({
+        message: "No file uploaded",
+        success: false,
+      });
+    }
+
+    // Validate file type
+    if (!req.file.mimetype.startsWith("image/")) {
+      return res.status(400).json({
+        message: "Only image files are allowed",
+        success: false,
+      });
+    }
+
+    const fileUri = getDataUri(req.file);
+    const result = await cloudinary.uploader.upload(fileUri.content, {
+      folder: "profile_photos",
+      resource_type: "image",
+    });
+
+    user.profile.profilePhoto = result.secure_url;
+    await user.save();
+
+    return res.status(200).json({
+      message: "Profile photo updated successfully",
+      profilePhoto: result.secure_url,
+      success: true,
+    });
+  } catch (error) {
+    console.error("Profile photo upload error:", error);
+    return res.status(500).json({
+      message: error.message || "Profile photo upload failed",
+      success: false,
     });
   }
 };
