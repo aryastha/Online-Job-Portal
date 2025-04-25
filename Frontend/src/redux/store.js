@@ -4,7 +4,7 @@ import jobSlice from "./jobSlice";
 import jobReducer from './jobSlice'
 import { companySlice } from "./companySlice";
 import companyReducer from "./companySlice"
-import { applicationReducer } from "./applicationSlice";
+import  applicationReducer  from "./applicationSlice";
 
 
 // import { createRoot } from "react-dom/client";
@@ -50,6 +50,7 @@ const store = configureStore({
     company: companySlice,
     company: companyReducer,
     application : applicationReducer
+  
    
     
   }

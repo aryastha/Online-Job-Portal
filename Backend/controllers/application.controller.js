@@ -55,7 +55,7 @@ export const applyJob = async (req, res) => {
     });
 
     if (!job.applications) {
-      job.applications = []; // Initialize as an empty array if it's null
+      job.applications = []; 
     }
 
     job.applications.push(newApplication._id);
@@ -207,6 +207,32 @@ export const uploadResume = async (req, res) => {
     return res.status(500).json({ 
       success: false,
       message: error.message || "Internal server error" 
+    });
+  }
+};
+
+
+// Only fetches pending applications
+export const getPendingApplications = async (req, res) => {
+  try {
+    const applications = await Application.find({ status: "pending" })
+      .sort({ createdAt: -1 }) 
+      .populate("applicant", "fullname email") 
+      .populate({
+        path: "job",
+        select: "title", 
+        populate: { path: "company", select: "name" }, 
+      });
+
+    res.status(200).json({ 
+      success: true,
+      applications 
+    });
+  } catch (error) {
+    console.error("Error in getPendingApplications:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to fetch pending applications" 
     });
   }
 };

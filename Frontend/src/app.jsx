@@ -19,6 +19,7 @@ import AdminDashboard from "./components/admincomponents/AdminDashboard";
 import AllApplicants from "./components/admincomponents/AllApplicants";
 import RecruiterProfile from "./components/admincomponents/RecruiterProfile";
 import SavedJobs from "./components/components_lite/SavedJobs";
+import PendingApplications from "./components/admincomponents/PendingApplications";
 // import PublicRoute from "./components/authentication/PublicRoute";
 
 const appRouter = createBrowserRouter([
@@ -144,6 +145,10 @@ const appRouter = createBrowserRouter([
     path: "/saved/jobs",
     element: <SavedJobs />,
   },
+  {
+    path: "/admin/applications/pending",
+    element: <PendingApplications />
+  }
 ]);
 
 function App() {
