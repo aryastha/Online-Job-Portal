@@ -16,6 +16,28 @@ const applicationSchema = new mongoose.Schema(
       enum: ["pending", "accepted", "rejected"],
       default: "pending",
     },
+    interview:{
+      scheduledAt:{
+        type:Date,
+      },
+      location:{
+        type:String,
+      },
+        notes:{
+          type:String
+      },
+      interviewer:{
+        type:String
+      },
+      feedback:{
+        type: String
+      },
+      interviewStatus: {
+        type: String,
+        enum: ["scheduled", "completed", "cancelled"],
+        default: "scheduled",
+      },
+    }
   },
   {
     timestamps: true,

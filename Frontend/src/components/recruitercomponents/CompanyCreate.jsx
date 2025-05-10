@@ -33,7 +33,7 @@ const CompanyCreate = () => {
         dispatch(setSingleCompany(res.data.company));
         toast.success(res.data.message);
         const companyId = res?.data?.company?._id;
-        navigate(`/admin/companies/${companyId}`);
+        navigate(`/recruiter/companies/${companyId}`);
       }
     } catch (error) {
       console.log(error);
@@ -58,7 +58,7 @@ const CompanyCreate = () => {
         <div className="flex items-center gap-2 my-10">
           <Button
             variant="outline"
-            onClick={() => navigate("/admin/companies")}
+            onClick={() => navigate("/recruiter/companies")}
           >
             Cancel
           </Button>

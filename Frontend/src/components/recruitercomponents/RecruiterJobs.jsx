@@ -6,16 +6,16 @@ import Navbar from '../components_lite/Navbar';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Plus } from 'lucide-react';
-import AdminJobsTable from './AdminJobsTable'; 
+import RecruiterJobsTable from './RecruiterJobsTable'; 
 import { useNavigate } from 'react-router-dom';
 import useGetAllComapnies from '@/hooks/useGetAllComapnies';
 import { useDispatch } from 'react-redux';
-import useGetAllAdminJobs from '@/hooks/useGetAllAdminJobs';
+import useGetAllRecruiterJobs from '@/hooks/useGetAllRecruiterJobs';
 import { setSearchJobByText } from '@/redux/jobSlice';
 
-const AdminJobs = () => {
+const RecruiterJobs = () => {
 
-    useGetAllAdminJobs();
+    useGetAllRecruiterJobs();
     const navigate = useNavigate();
 
     useGetAllComapnies();
@@ -41,7 +41,7 @@ const AdminJobs = () => {
             </p>
           </div>
           <Button className="mt-4 md:mt-0 bg-[#E67E22]"
-          onClick= {()=>navigate("/admin/jobs/create")}
+          onClick= {()=>navigate("/recruiter/jobs/create")}
           >
             <Plus className="mr-2 h-4 w-4" />
             Post New Job
@@ -66,7 +66,7 @@ const AdminJobs = () => {
 
         {/* Company Table */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <AdminJobsTable />
+          <RecruiterJobsTable />
         </div>
       </div>
     </div>
@@ -74,4 +74,4 @@ const AdminJobs = () => {
 };
 
 
-export default AdminJobs
+export default RecruiterJobs

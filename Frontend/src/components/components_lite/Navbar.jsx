@@ -56,7 +56,7 @@ const Navbar = () => {
               <>
                 <li>
                   <Link
-                    to="/admin/jobs"
+                    to="/recruiter/jobs"
                     className="hover:text-[#E67E22] transition-all duration-300 text-base"
                   >
                     Jobs
@@ -64,7 +64,7 @@ const Navbar = () => {
                 </li>
                 <li>
                   <Link
-                    to="admin/companies"
+                    to="recruiter/companies"
                     className="hover:text-[#E67E22] transition-all duration-300 text-base"
                   >
                     Companies
@@ -153,7 +153,7 @@ const Navbar = () => {
                 <div className="flex flex-col space-y-2">
                   {/* User Profile */}
                   {user && user.role === "Recruiter" ? (
-                    <Link to="/admin/profile">
+                    <Link to="/recruiter/profile">
                       <Button
                         variant="ghost"
                         className="w-full justify-start gap-2 hover:bg-gray-100 text-[#2C3E50]"

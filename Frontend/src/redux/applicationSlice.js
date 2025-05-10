@@ -26,6 +26,7 @@ import axios from 'axios';
 const initialState = {
   applicants: null,
   pendingApplications: [], 
+  interviews: [],
   loading: false,
   error: null
 };
@@ -45,6 +46,9 @@ const applicationSlice = createSlice({
     },
     setError: (state, action) => {
       state.error = action.payload;
+    },
+    setInterviews: (state, action) =>{
+      state.interviews = action.payload;
     }
   }
 });
@@ -54,7 +58,8 @@ export const {
   setAllApplicants, 
   setPendingApplications,
   setLoading,
-  setError 
+  setError ,
+  setInterviews
 } = applicationSlice.actions;
 
 export default applicationSlice.reducer;

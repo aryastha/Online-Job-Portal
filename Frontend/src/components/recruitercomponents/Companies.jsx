@@ -35,7 +35,7 @@ const Companies = () => {
             </p>
           </div>
           <Button className="mt-4 md:mt-0 bg-[#E67E22]"
-          onClick= {()=>navigate("/admin/companies/create")}
+          onClick= {()=>navigate("/recruiter/companies/create")}
           >
             <Plus className="mr-2 h-4 w-4" />
             Add Company

@@ -7,19 +7,19 @@ import Jobs from "./components/components_lite/Jobs.jsx";
 import Browse from "./components/components_lite/Browse.jsx";
 import Description from "./components/components_lite/Description.jsx";
 import Profile from "./components/components_lite/Profile.jsx";
-import Companies from "./components/admincomponents/Companies.jsx";
-import CompanyCreate from "./components/admincomponents/CompanyCreate.jsx";
-import CompanySetup from "./components/admincomponents/CompanySetup.jsx";
+import Companies from "./components/recruitercomponents/Companies.jsx";
+import CompanyCreate from "./components/recruitercomponents/CompanyCreate.jsx";
+import CompanySetup from "./components/recruitercomponents/CompanySetup.jsx";
 import ResumeBuilderPage from "./components/components_lite/ResumeBuilderPage.jsx";
-import AdminJobs from "./components/admincomponents/AdminJobs.jsx";
-import PostJob from "./components/admincomponents/PostJob";
-import Applicants from "./components/admincomponents/Applicants";
-import ProtectedRoute from "./components/admincomponents/ProtectedRoute";
-import AdminDashboard from "./components/admincomponents/AdminDashboard";
-import AllApplicants from "./components/admincomponents/AllApplicants";
-import RecruiterProfile from "./components/admincomponents/RecruiterProfile";
+import RecruiterJobs from "./components/recruitercomponents/recruiterJobs.jsx";
+import PostJob from "./components/recruitercomponents/PostJob";
+import Applicants from "./components/recruitercomponents/Applicants";
+import ProtectedRoute from "./components/recruitercomponents/ProtectedRoute";
+import RecruiterDashboard from "./components/recruitercomponents/recruiterDashboard";
+import AllApplicants from "./components/recruitercomponents/AllApplicants";
+import RecruiterProfile from "./components/recruitercomponents/RecruiterProfile";
 import SavedJobs from "./components/components_lite/SavedJobs";
-import PendingApplications from "./components/admincomponents/PendingApplications";
+import PendingApplications from "./components/recruitercomponents/PendingApplications";
 // import PublicRoute from "./components/authentication/PublicRoute";
 
 const appRouter = createBrowserRouter([
@@ -65,10 +65,10 @@ const appRouter = createBrowserRouter([
     path: "/resume/create",
     element: <ResumeBuilderPage />,
   },
-  //admin
+  //recruiter
 
   {
-    path: "/admin/profile",
+    path: "/recruiter/profile",
     element:
     <ProtectedRoute>
     {" "}
@@ -77,15 +77,15 @@ const appRouter = createBrowserRouter([
   },
 
   {
-    path: "/admin/dashboard",
+    path: "/recruiter/dashboard",
     element:
     <ProtectedRoute>
     {" "}
-    <AdminDashboard />
+    <RecruiterDashboard />
   </ProtectedRoute>
   },
   {
-    path: "/admin/companies",
+    path: "/recruiter/companies",
     element: (
       <ProtectedRoute>
         {" "}
@@ -94,7 +94,7 @@ const appRouter = createBrowserRouter([
     ),
   },
   {
-    path: "/admin/companies/create",
+    path: "/recruiter/companies/create",
     element: (
       <ProtectedRoute>
         <CompanyCreate />
@@ -102,7 +102,7 @@ const appRouter = createBrowserRouter([
     ),
   },
   {
-    path: "/admin/companies/:id",
+    path: "/recruiter/companies/:id",
     element: (
       <ProtectedRoute>
         <CompanySetup />
@@ -110,15 +110,15 @@ const appRouter = createBrowserRouter([
     ),
   },
   {
-    path: "/admin/jobs",
+    path: "/recruiter/jobs",
     element: (
       <ProtectedRoute>
-        <AdminJobs />
+        <RecruiterJobs />
       </ProtectedRoute>
     ),
   },
   {
-    path: "/admin/jobs/create",
+    path: "/recruiter/jobs/create",
     element: (
       <ProtectedRoute>
         <PostJob />
@@ -126,7 +126,7 @@ const appRouter = createBrowserRouter([
     ),
   },
   {
-    path: "/admin/jobs/:id/applicants",
+    path: "/recruiter/jobs/:id/applicants",
     element: (
       <ProtectedRoute>
         <Applicants />
@@ -134,7 +134,7 @@ const appRouter = createBrowserRouter([
     ),
   },
   {
-    path: "/admin/applicants",
+    path: "/recruiter/applicants",
     element: (
       <ProtectedRoute>
         <AllApplicants/>
@@ -146,7 +146,7 @@ const appRouter = createBrowserRouter([
     element: <SavedJobs />,
   },
   {
-    path: "/admin/applications/pending",
+    path: "/recruiter/applications/pending",
     element: <PendingApplications />
   }
 ]);

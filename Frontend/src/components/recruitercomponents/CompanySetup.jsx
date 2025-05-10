@@ -71,7 +71,7 @@ const CompanySetup = () => {
           position: "top-center",
           duration: 2000,
         });
-        navigate("/admin/companies");
+        navigate("/recruiter/companies");
       } else {
         throw new Error("Unexpected API response.");
       }
@@ -117,7 +117,7 @@ const CompanySetup = () => {
           <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
             <div className="flex items-center gap-4">
               <Button
-                onClick={() => navigate("/admin/companies")}
+                onClick={() => navigate("/recruiter/companies")}
                 variant="outline"
                 size="sm"
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
@@ -238,7 +238,7 @@ const CompanySetup = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate("/admin/companies")}
+                onClick={() => navigate("/recruiter/companies")}
                 className="mr-3"
               >
                 Cancel

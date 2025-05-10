@@ -24,19 +24,19 @@ import {
   TableRow,
 } from "../ui/table";
 
-const AdminJobsTable = () => {
+const RecruiterJobsTable = () => {
   const { companies, searchCompanyByText } = useSelector(
     (store) => store.company
   );
-  const { allAdminJobs } = useSelector((store) => store.job);
+  const { allRecruiterJobs } = useSelector((store) => store.job);
   const { searchJobByText } = useSelector((store) => store.job || "");
   const navigate = useNavigate();
-  const [filterJobs, setFilterJobs] = useState(allAdminJobs);
+  const [filterJobs, setFilterJobs] = useState(allRecruiterJobs);
 
   useEffect(() => {
     const filteredJobs =
-      allAdminJobs.length >= 0 &&
-      allAdminJobs.filter((job) => {
+      allRecruiterJobs.length >= 0 &&
+      allRecruiterJobs.filter((job) => {
         if (!searchJobByText) {
           return true;
         }
@@ -48,7 +48,7 @@ const AdminJobsTable = () => {
         );
       });
     setFilterJobs(filteredJobs);
-  }, [allAdminJobs, searchJobByText]);
+  }, [allRecruiterJobs, searchJobByText]);
 
   // Delete job function (replace with your API call)
   const handleDeleteJob = async (jobId) => {
@@ -110,7 +110,7 @@ const AdminJobsTable = () => {
                     <PopoverContent className="w-40"> {/* Increased width */}
                       <div className="space-y-2">
                         <div
-                          onClick={() => navigate(`/admin/companies/${job._id}`)}
+                          onClick={() => navigate(`/recruiter/companies/${job._id}`)}
                           className="flex items-center gap-3 w-fit cursor-pointer hover:bg-gray-100 p-1 rounded"
                         >
                           <Edit2 className="w-4" />
@@ -118,7 +118,7 @@ const AdminJobsTable = () => {
                         </div>
                         
                         <div
-                          onClick={() => navigate(`/admin/jobs/${job._id}/applicants`)}
+                          onClick={() => navigate(`/recruiter/jobs/${job._id}/applicants`)}
                           className="flex items-center gap-3 w-fit cursor-pointer hover:bg-gray-100 p-1 rounded"
                         >
                           <Eye className="w-4" />
@@ -147,4 +147,4 @@ const AdminJobsTable = () => {
   );
 };
 
-export default AdminJobsTable;
+export default RecruiterJobsTable;

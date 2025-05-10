@@ -1,6 +1,6 @@
 import { Job } from "../models/job.model.js";
 import { User } from "../models/user.model.js";
-//Admin job posting
+//recruiter job posting
 export const postJob = async (req, res) => {
   try {
     const {
@@ -115,11 +115,11 @@ export const getJobById = async (req, res) => {
   }
 };
 
-//Admin job created
-export const getAdminJobs = async (req, res) => {
+//recruiter job created
+export const getRecruiterJobs = async (req, res) => {
   try {
-    const adminId = req.id;
-    const jobs = await Job.find({ created_by: adminId }).populate({
+    const recruiterId = req.id;
+    const jobs = await Job.find({ created_by: recruiterId }).populate({
       path: "company",
       sort: { createdAt: -1 },
     });

@@ -215,24 +215,136 @@ export const uploadResume = async (req, res) => {
 // Only fetches pending applications
 export const getPendingApplications = async (req, res) => {
   try {
-    const applications = await Application.find({ status: "pending" })
-      .sort({ createdAt: -1 }) 
-      .populate("applicant", "fullname email") 
+    const pendingApplications = await Application.find({ status: "pending" })
+      .populate("job", "title company") // populate job title and company
       .populate({
         path: "job",
-        select: "title", 
-        populate: { path: "company", select: "name" }, 
+        populate: {
+          path: "company",
+          select: "name",
+        },
+      })
+      .populate("applicant", "name email") // populate applicant details
+      .sort({ createdAt: -1 }); 
+
+    res.status(200).json({ success: true, data: pendingApplications });
+  } catch (error) {
+    console.error("Error fetching pending applications:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+
+// Schedule an interview
+export const scheduleInterview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { scheduledAt, location, notes, interviewer } = req.body;
+
+    const application = await Application.findById(id)
+      .populate('applicant', 'email fullname')
+      .populate({
+        path: 'job',
+        populate: { path: 'company', select: 'name' }
       });
 
-    res.status(200).json({ 
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: "Application not found",
+      });
+    }
+
+    // Update application with interview details
+    application.status = "interview";
+    application.interview = {
+      scheduledAt,
+      location: location || "Online",
+      notes,
+      interviewer,
+      status: "scheduled",
+    };
+
+    await application.save();
+
+    // Here you would typically send an email notification
+    // For example: await sendInterviewEmail(application);
+
+    return res.status(200).json({
       success: true,
-      applications 
+      message: "Interview scheduled successfully",
+      application,
     });
   } catch (error) {
-    console.error("Error in getPendingApplications:", error);
-    res.status(500).json({ 
+    console.error(error);
+    return res.status(500).json({
       success: false,
-      message: "Failed to fetch pending applications" 
+      message: "Failed to schedule interview",
+      error: error.message,
+    });
+  }
+};
+
+// Get applications with interview status
+export const getInterviewApplications = async (req, res) => {
+  try {
+    const applications = await Application.find({ "interview.status": "scheduled" })
+      .populate("applicant", "fullname email")
+      .populate({
+        path: "job",
+        select: "title",
+        populate: { path: "company", select: "name" },
+      })
+      .sort({ "interview.scheduledAt": 1 }); // Sort by interview date
+
+    res.status(200).json({
+      success: true,
+      applications,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch interview applications",
+    });
+  }
+};
+
+// Update interview details
+export const updateInterview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    const application = await Application.findByIdAndUpdate(
+      id,
+      { $set: { interview: updateData } },
+      { new: true }
+    )
+      .populate("applicant", "fullname email")
+      .populate({
+        path: "job",
+        select: "title",
+        populate: { path: "company", select: "name" },
+      });
+
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: "Application not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Interview updated successfully",
+      application,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update interview",
     });
   }
 };

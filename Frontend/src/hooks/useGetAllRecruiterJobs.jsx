@@ -2,22 +2,22 @@ import React, { useEffect } from "react";
 import axios from "axios";
 import { JOB_API_ENDPOINT } from "@/utils/data";
 import { useDispatch } from "react-redux";
-import { setAllAdminJobs } from "@/redux/jobSlice";
+import { setAllRecruiterJobs } from "@/redux/jobSlice";
 import { redirect } from "react-router-dom";
 
 //To fetch all the jobd from an API
-function useGetAllAdminJobs() {
+function useGetAllRecruiterJobs() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const fetchAllAdminJobs = async () => {
+    const fetchAllRecruiterJobs = async () => {
       try {
-        const res = await axios.get(`${JOB_API_ENDPOINT}/getadminjobs`, {
+        const res = await axios.get(`${JOB_API_ENDPOINT}/getrecruiterjobs`, {
           withCredentials: true,
         });
 
         if (res.data.status) {
-          dispatch(setAllAdminJobs(res.data.jobs)); //sent to the redux store
+          dispatch(setAllRecruiterJobs(res.data.jobs)); //sent to the redux store
         }else{
             console.log("API was not successful:", res.data);
         }
@@ -25,8 +25,8 @@ function useGetAllAdminJobs() {
         console.log("Error fetching jobs",error);
       }
     };
-    fetchAllAdminJobs();
+    fetchAllRecruiterJobs();
   }, [dispatch]);
 }
 
-export default useGetAllAdminJobs;
+export default useGetAllRecruiterJobs;

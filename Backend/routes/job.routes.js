@@ -1,12 +1,12 @@
 import express from 'express';
-import {postJob, getAllJobs, getJobById,getAdminJobs,bookmarkJob,getBookmarkedJobs, saveJob,getSavedJobs, checkJobSavedStatus, toggleSaveJob} from '../controllers/job.controller.js';
+import {postJob, getAllJobs, getJobById,getRecruiterJobs,bookmarkJob,getBookmarkedJobs, saveJob,getSavedJobs, checkJobSavedStatus, toggleSaveJob} from '../controllers/job.controller.js';
 import authenticateToken from '../middleware/isAuthenticated.js';
 
 const router = express.Router();
 
 router.route('/post').post(authenticateToken,postJob);
 router.route('/get').get( authenticateToken,getAllJobs);
-router.route('/getadminjobs').get(authenticateToken, getAdminJobs);
+router.route('/getrecruiterjobs').get(authenticateToken, getRecruiterJobs);
 router.route('/get/:id').get(authenticateToken, getJobById);
 
 router.route('/:id/bookmark').post(authenticateToken, bookmarkJob);

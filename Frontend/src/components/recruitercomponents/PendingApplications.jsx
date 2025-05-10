@@ -10,7 +10,7 @@ const PendingApplications = () => {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="flex items-center mb-6">
-        <Link to="/admin/dashboard" className="mr-4">
+        <Link to="/recruiter/dashboard" className="mr-4">
           <ArrowLeft className="w-5 h-5 text-gray-600" />
         </Link>
         <h1 className="text-2xl font-bold flex items-center">
