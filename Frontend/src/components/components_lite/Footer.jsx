@@ -27,13 +27,13 @@ const Footer = () => {
                         </li>
 
                         <li>
-                            <Link to ="/about" className="text-sm text-gray-300 hover:text-white transition-duration-300">
+                            <Link to ="/privacy-policy" className="text-sm text-gray-300 hover:text-white transition-duration-300">
                             Privacy Policy
                             </Link>
                         </li>
 
                         <li>
-                            <Link to ="/about" className="text-sm text-gray-300 hover:text-white transition-duration-300">
+                            <Link to ="/terms-of-service" className="text-sm text-gray-300 hover:text-white transition-duration-300">
                             Terms of Service
                             </Link>
                         </li>
@@ -45,7 +45,7 @@ const Footer = () => {
                     <h3 className="text-lg font-medium mb-4">Follow Us</h3>
                     <div className="flex justify-center md:justify-end and space-x-4">
                         <a
-                        href="https://facebook.com"
+                        href="https://facebook.com/bestrole"
                         target="_blank"
                         rel="noopener noreferrer"
                         className='text-gray-300 hover:text-white transition-all duration-30'>
@@ -53,7 +53,7 @@ const Footer = () => {
                         </a>
 
                         <a
-                        href="https://instagram.com"
+                        href="https://instagram.com/bestrole_jobs"
                         target="_blank"
                         rel="noopener noreferrer"
                         className='text-gray-300 hover:text-white transition-all duration-30'>
@@ -61,7 +61,7 @@ const Footer = () => {
                         </a>
 
                         <a
-                        href="https://linkedin.com"
+                        href="https://linkedin.com/company/bestrole"
                         target="_blank"
                         rel="noopener noreferrer"
                         className='text-gray-300 hover:text-white transition-all duration-30'>

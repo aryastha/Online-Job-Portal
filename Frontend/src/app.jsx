@@ -32,6 +32,9 @@ import InterviewDetails from "./components/Interview/InterviewCard";
 import ScheduleInterviewForm from "./components/Interview/ScheduleInterviewForm";
 import RecruiterScheduledInterviews from "./components/recruitercomponents/RecruiterScheduledInterviews";
 import InterviewCalendar from "./components/Interview/InterviewCalendar";
+import About from './pages/About';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 
 import { AuthProvider } from "./context/AuthContext"; 
 
@@ -252,6 +255,18 @@ const appRouter = createBrowserRouter([
         <ScheduleInterviewForm />
       </RecruiterProtectedRoute>
     ),
+  },
+  {
+    path: "/about",
+    element: <About />,
+  },
+  {
+    path: "/privacy-policy",
+    element: <PrivacyPolicy />,
+  },
+  {
+    path: "/terms-of-service",
+    element: <TermsOfService />,
   },
 ]);
 
