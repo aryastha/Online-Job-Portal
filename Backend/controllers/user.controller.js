@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloud.js";
+import { createActivity } from '../controllers/activity.controller.js';
 dotenv.config();
 
 export const register = async (req, res) => {
@@ -57,6 +58,14 @@ export const register = async (req, res) => {
     await newUser.save();
 
     console.log(newUser);
+
+    await createActivity(
+      'user_registered',
+      newUser.fullname,
+      `New user registered: ${newUser.email}`,
+      { userId: newUser._id }
+    );
+
     return res.status(200).json({
       message: `User is registered successfully ${fullname}`,
       success: true,
@@ -276,6 +285,13 @@ export const updateProfile = async (req, res) => {
       },
     };
 
+    await createActivity(
+      'profile_updated',
+      user.fullname,
+      `Profile updated: ${user.email}`,
+      { userId: user._id }
+    );
+
     return res.status(200).json({
       message: "Profile updated successfully",
       user: updatedUser,
@@ -295,6 +311,13 @@ export const uploadResume = async (req, res) => {
   try {
     const userId = req.id;
     const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+      });
+    }
 
     if (!req.file) {
       return res.status(400).json({
@@ -323,9 +346,21 @@ export const uploadResume = async (req, res) => {
       resource_type: 'raw'
     });
 
+    // Initialize profile object if it doesn't exist
+    if (!user.profile) {
+      user.profile = {};
+    }
+
     user.profile.resume = result.secure_url;
     user.profile.resumeOriginalname = req.file.originalname;
     await user.save();
+
+    await createActivity(
+      'resume_uploaded',
+      user.fullname,
+      `New resume uploaded: ${req.file.originalname}`,
+      { userId: user._id }
+    );
 
     return res.status(200).json({
       message: "Resume uploaded successfully",
@@ -340,11 +375,19 @@ export const uploadResume = async (req, res) => {
     });
   }
 };
+
 //upload profile
 export const uploadProfilePhoto = async (req, res) => {
   try {
     const userId = req.id;
     const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+      });
+    }
 
     if (!req.file) {
       return res.status(400).json({
@@ -367,8 +410,20 @@ export const uploadProfilePhoto = async (req, res) => {
       resource_type: "image",
     });
 
+    // Initialize profile object if it doesn't exist
+    if (!user.profile) {
+      user.profile = {};
+    }
+
     user.profile.profilePhoto = result.secure_url;
     await user.save();
+
+    await createActivity(
+      'profile_photo_updated',
+      user.fullname,
+      `Profile photo updated: ${result.secure_url}`,
+      { userId: user._id }
+    );
 
     return res.status(200).json({
       message: "Profile photo updated successfully",
@@ -380,6 +435,85 @@ export const uploadProfilePhoto = async (req, res) => {
     return res.status(500).json({
       message: error.message || "Profile photo upload failed",
       success: false,
+    });
+  }
+};
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}).select('-password');
+    return res.status(200).json({
+      success: true,
+      users,
+    });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch users',
+    });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findByIdAndDelete(userId);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    await createActivity(
+      'user_deleted',
+      user.fullname,
+      `User deleted: ${user.email}`,
+      { userId: user._id }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'User deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to delete user'
+    });
+  }
+};
+
+export const searchUsers = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) {
+      return res.status(400).json({
+        success: false,
+        message: 'Search query is required',
+      });
+    }
+
+    const searchRegex = new RegExp(q, 'i');
+    const users = await User.find({
+      $or: [
+        { fullname: searchRegex },
+        { email: searchRegex },
+      ],
+    }).select('fullname email role profile.profilePhoto');
+
+    return res.status(200).json({
+      success: true,
+      users,
+    });
+  } catch (error) {
+    console.error('Error searching users:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to search users',
     });
   }
 };

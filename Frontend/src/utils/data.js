@@ -1,5 +1,10 @@
-export const USER_API_ENDPOINT = "http://localhost:5003/api/user";
-export const JOB_API_ENDPOINT = "http://localhost:5003/api/job";
-export const APPLICATION_API_ENDPOINT = "http://localhost:5003/api/application"
-export const COMPANY_API_ENDPOINT = "http://localhost:5003/api/company";
-export const RESUMES_API_ENDPOINT ="http://localhost:5003/api/resumes";
+export const BASE_URL = 'http://localhost:5004/api';
+export const USER_API_ENDPOINT = `${BASE_URL}/user`;
+export const JOB_API_ENDPOINT = `${BASE_URL}/job`;
+export const COMPANY_API_ENDPOINT = `${BASE_URL}/company`;
+export const RECRUITER_API_ENDPOINT = `${BASE_URL}/recruiter`;
+export const APPLICATION_API_ENDPOINT = `${BASE_URL}/application`;
+export const NOTIFICATION_API_ENDPOINT = `${BASE_URL}/notifications`;
+export const RESUMES_API_ENDPOINT = "http://localhost:5004/api/resumes";
+export const MESSAGE_API_ENDPOINT = "http://localhost:5004/api/messages";
+export const REACT_APP_API_URL="http://localhost:5004/api"

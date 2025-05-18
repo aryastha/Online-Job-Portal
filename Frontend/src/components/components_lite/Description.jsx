@@ -326,7 +326,7 @@ const Description = () => {
         </div>
 
         {/* Applicants Info */}
-        <div className="bg-gray-50 p-6 rounded-xl">
+        {/* <div className="bg-gray-50 p-6 rounded-xl">
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-xl font-bold text-gray-900">Applications</h2>
@@ -335,14 +335,14 @@ const Description = () => {
                 {singleJob?.applications?.length !== 1 ? "s" : ""} have applied
               </p>
             </div>
-            <Button
+            {/* <Button
               variant="outline"
               className="border-[#E67E22] text-[#E67E22] hover:bg-[#E67E22]/10"
             >
               View Applicants
-            </Button>
-          </div>
-        </div>
+            </Button> */}
+          {/* </div>
+        </div> */} 
       </div>
     </div>
   );

@@ -1,62 +1,112 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema(
     {
-        fullname:{
+        fullname: {
             type: String,
-            required: true ,
+            required: [true, "Name is required"],
+            trim: true,
         },
-        email:{
+        email: {
             type: String,
-            required: true,
+            required: [true, "Email is required"],
             unique: true,
+            trim: true,
+            lowercase: true,
         },
-        phoneNumber:{
+        phoneNumber: {
             type: String,
-            required: true,
-            unique: true,
+            trim: true,
         },
-        password:{
+        password: {
             type: String,
-            required: true,
-            minlength: 8,
+            required: [true, "Password is required"],
+            minlength: [6, "Password must be at least 6 characters"],
         },
-        role:{
-            type:String,
-            enum: ['Employee', 'Recruiter'],
-            default: 'Employee',
-            required: true,
+        role: {
+            type: String,
+            enum: ["Admin", "Employee", "Recruiter"],
+            default: "Employee",
         },
-        profile:{
-            bio:{
+        profile: {
+            bio: {
                 type: String,
-                default: '',
+                trim: true,
             },
-            skills: [{type: String,}],
-            resume:{
+            skills: [{
                 type: String,
+                trim: true
+            }],
+            resume: {
+                type: String
             },
-            resumeOriginalname:{
-                type: String,
-            },
-            company:{
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Company",
+            resumeOriginalname: {
+                type: String
             },
             profilePhoto: {
-                type: String,
-                default: '',
+                type: String
             },
-        },
-        bookmarks: [
-            {
-              type: mongoose.Schema.Types.ObjectId,
-              ref: "Job"
+            company: {
+                type: String,
+                trim: true
+            },
+            position: {
+                type: String,
+                trim: true
             }
-          ],
+        },
+        location: {
+            type: String,
+            trim: true,
+        },
+        experience: [{
+            title: String,
+            company: String,
+            duration: String
+        }],
+        education: [{
+            degree: String,
+            institution: String,
+            year: String
+        }],
+        profileImage: {
+            public_id: String,
+            url: String
+        },
+        socialLinks: {
+            linkedin: String,
+            twitter: String,
+            portfolio: String
+        },
+        bookmarks: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Job'
+        }],
+        isVerified: {
+            type: Boolean,
+            default: false,
+        },
+        verificationToken: String,
+        resetPasswordToken: String,
+        resetPasswordExpire: Date,
     },
     {timestamps: true}
 );
+
+// Hash password before saving
+userSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) {
+        return next();
+    }
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
+});
+
+// Compare password method
+userSchema.methods.comparePassword = async function (enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
+};
 
 export const User = mongoose.model("User", userSchema);
 

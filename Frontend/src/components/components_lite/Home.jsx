@@ -20,6 +20,8 @@ const navigate = useNavigate();
 useEffect(()=>{
   if (user?.role === 'Recruiter'){
     navigate("/recruiter/dashboard");
+  } else if (user?.role === 'Admin') {
+    navigate("/admin/dashboard");
   }
 },[])
   

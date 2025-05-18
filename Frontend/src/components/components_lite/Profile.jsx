@@ -217,12 +217,12 @@ const Profile = () => {
           <div className="p-6 md:p-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900">Applied Jobs</h2>
-              <Button
+              {/* <Button
                 variant="ghost"
                 className="text-[#d9731d] hover:bg-[#d9731d]/10"
               >
                 View all <ChevronRight size={16} className="ml-1" />
-              </Button>
+              </Button> */}
             </div>
             <AppliedJobs />
           </div>

@@ -1,6 +1,7 @@
 import { Company } from "../models/company.model.js";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloud.js";
+import { createActivity } from "./activity.controller.js";
 
 //Register a new company
 export const registerCompany = async (req, res) => {
@@ -23,6 +24,15 @@ export const registerCompany = async (req, res) => {
       name: companyName,
       userId: req.id,
     });
+
+    // Create activity log for company registration
+    await createActivity(
+      'company_added',
+      req.user.fullname,
+      `New company registered: ${companyName}`,
+      { companyId: company._id }
+    );
+
     return res.status(201).json({
       message: "Company registered successfully.",
       company,
@@ -30,6 +40,10 @@ export const registerCompany = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({
+      message: "Server error: Failed to register company",
+      success: false,
+    });
   }
 };
 
@@ -37,9 +51,28 @@ export const registerCompany = async (req, res) => {
 export const getAllCompanies = async (req, res) => {
   try {
     const userId = req.id;
-    const companies = await Company.find({ userId });
+    const userRole = req.user?.role?.toLowerCase(); // Convert role to lowercase for case-insensitive comparison
+    
+    console.log('User ID:', userId);
+    console.log('User Role:', userRole);
 
-    if (!companies) {
+    // If user is admin, return all companies
+    if (userRole === 'admin') {
+      const companies = await Company.find({})
+        .populate('userId', 'fullname email')
+        .sort({ createdAt: -1 });
+      return res.json({
+        companies,
+        success: true,
+      });
+    }
+
+    // For regular users (recruiters), return only their companies
+    const companies = await Company.find({ userId })
+      .populate('userId', 'fullname email')
+      .sort({ createdAt: -1 });
+
+    if (!companies || companies.length === 0) {
       return res.status(404).json({
         message: "No companies found",
         success: false,
@@ -50,9 +83,10 @@ export const getAllCompanies = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error in getAllCompanies:', error);
     res.status(500).json({
-      message: "Server Error Cant get all companies",
+      message: "Server Error: Cannot get all companies",
+      error: error.message,
       success: false,
     });
   }
@@ -138,6 +172,45 @@ export const updateCompany = async (req, res) => {
     console.error(error);
     res.status(500).json({
       message: "Server error cannot update Company",
+      success: false,
+    });
+  }
+};
+
+//Delete a company
+export const deleteCompany = async (req, res) => {
+  try {
+    const companyId = req.params.id;
+    const userRole = req.user?.role;
+
+    // Find the company first to check ownership
+    const company = await Company.findById(companyId);
+    
+    if (!company) {
+      return res.status(404).json({
+        message: "Company not found",
+        success: false,
+      });
+    }
+
+    // Only allow admin or the company owner to delete
+    if (userRole !== 'Admin' && company.userId.toString() !== req.id) {
+      return res.status(403).json({
+        message: "Not authorized to delete this company",
+        success: false,
+      });
+    }
+
+    // Delete the company
+    await Company.findByIdAndDelete(companyId);
+
+    return res.status(200).json({
+      message: "Company deleted successfully",
+      success: true,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error: Cannot delete company",
       success: false,
     });
   }

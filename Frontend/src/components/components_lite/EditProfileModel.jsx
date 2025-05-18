@@ -102,7 +102,7 @@ const EditProfileModel = ({ open, setOpen }) => {
             },
           })
         );
-        setProfilePhotoFile(null); // Clear after successful upload =
+        setProfilePhotoFile(null);
         return true;
       }
     } catch (error) {
@@ -147,7 +147,7 @@ const EditProfileModel = ({ open, setOpen }) => {
             },
           })
         );
-        setResumeFile(null); // Clear after successful upload
+        setResumeFile(null);
         return true;
       }
     } catch (error) {

@@ -1,5 +1,6 @@
 import { Job } from "../models/job.model.js";
 import { User } from "../models/user.model.js";
+import { createActivity } from "./activity.controller.js";
 //recruiter job posting
 export const postJob = async (req, res) => {
   try {
@@ -32,6 +33,16 @@ export const postJob = async (req, res) => {
         success: false,
       });
     }
+
+    // Get user details for activity log
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+      });
+    }
+
     const job = await Job.create({
       title,
       description,
@@ -44,6 +55,15 @@ export const postJob = async (req, res) => {
       company: companyId,
       created_by: userId,
     });
+
+    // Create activity log for job posting
+    await createActivity(
+      'job_posted',
+      user.fullname,
+      `New job posted: ${title} at ${job.company.name}`,
+      { jobId: job._id, companyId }
+    );
+
     res.status(201).json({
       message: "Job posted successfully.",
       job,
@@ -55,46 +75,65 @@ export const postJob = async (req, res) => {
   }
 };
 
-//Users
+// Get all jobs
 export const getAllJobs = async (req, res) => {
   try {
-    const keyword = req.query.keyword || "";
-    const query = {
-      $or: [
-        { title: { $regex: keyword, $options: "i" } },
-        { description: { $regex: keyword, $options: "i" } },
-      ],
-    };
-    const jobs = await Job.find(query)
-      .populate({
-        path: "company",
-      })
-      .lean() // Convert to plain JS object
-      .sort({ createdAt: -1 });
+    const userRole = req.user?.role?.toLowerCase();
+    console.log('User Role in getAllJobs:', userRole);
 
-      jobs.forEach(job =>{
-        if (!job.bookmarkedBy){
-          job.bookmarkedBy = [];
-        }
-        if (!job.savedBy){
-          job.savedBy=[];
-        }
-      })
+    // For admin, return all jobs with full details
+    if (userRole === 'admin') {
+      const jobs = await Job.find({})
+        .populate('company', 'name logo')
+        .populate('created_by', 'fullname email')
+        .populate('applications')
+        .sort({ createdAt: -1 });
 
-    if (req.id){
-      const userId= req.id;
-      jobs.forEach(job =>{
-        job.isBookmarked = job.bookmarkedBy.includes(userId);
-        job.isSaved = job.savedBy.includes(userId);
-      })
+      return res.json({
+        jobs,
+        success: true,
+      });
     }
-    if (!jobs) {
-      return res.status(404).json({ message: "No jobs found", status: false });
+
+    // For public access or employee access, return all active jobs
+    if (!req.user || userRole === 'employee') {
+      const jobs = await Job.find({})
+        .populate('company', 'name logo')
+        .populate('created_by', 'fullname email')
+        .sort({ createdAt: -1 }); // Sort by newest first
+
+      return res.json({
+        jobs,
+        success: true,
+      });
     }
-    return res.status(200).json({ jobs, status: true });
+
+    // For recruiters, return only their jobs
+    if (userRole === 'recruiter') {
+      const jobs = await Job.find({ created_by: req.id })
+        .populate('company', 'name logo')
+        .populate('created_by', 'fullname email')
+        .sort({ createdAt: -1 });
+
+      return res.json({
+        jobs,
+        success: true,
+      });
+    }
+
+    // Default response for unknown roles
+    return res.status(403).json({
+      message: "Unauthorized role",
+      success: false
+    });
+
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Server Error", status: false });
+    console.error('Error in getAllJobs:', error);
+    res.status(500).json({
+      message: "Server Error: Cannot get all jobs",
+      error: error.message,
+      success: false,
+    });
   }
 };
 
@@ -150,7 +189,7 @@ export const bookmarkJob = async (req, res) => {
     // Check if already bookmarked
     const isBookmarked = job.bookmarkedBy.includes(userId);
 
-    const updatedJob = await Job.findByIdandUpdate(
+    const updatedJob = await Job.findByIdAndUpdate(
       jobId,
       isBookmarked
       ? {$pull: {bookmarkedBy: userId}}
@@ -288,7 +327,6 @@ export const getSavedJobs = async (req, res) => {
   }
 };
 
-// In your jobController.js
 export const toggleSaveJob = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -343,3 +381,45 @@ export const checkJobSavedStatus = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+//admin
+
+
+
+//delete the job
+export const deleteJob = async(req,res) =>{
+  try{
+    const jobId = req.params.id;
+    const userRole = req.user?.role;
+
+    //Find the job first to check ownership
+    const job = await Job.findById(jobId);
+
+    if (!job){
+      return res.status(404).json({
+        message: "Job not Found",
+        success: false,
+      })
+    }
+
+    //only admin or the job creator can delete the job
+    if (userRole !== 'Admin' && job.created_by.toString() !== req.id){
+      return res.status(403).json({
+        message: "Not authorized to delete this job",
+        success: false,
+      })
+    }
+    //delete job 
+    await Job.findByIdAndDelete(jobId);
+    return res.status(200).json({
+      message: "Job deleted successfully",
+      success: true,
+    })
+  }catch(error){
+    res.status(500).json({
+      message: "Server Error: Cannot delete job",
+      success: false,
+    })
+  }
+}

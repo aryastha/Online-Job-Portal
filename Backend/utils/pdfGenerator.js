@@ -1,362 +1,552 @@
-import axios from 'axios';
-import PDFDocument from 'pdfkit';
+import axios from "axios"
+import PDFDocument from "pdfkit"
 
 export const generatePDF = async (resumeData) => {
   return new Promise(async (resolve, reject) => {
     try {
       // Initialize PDF with modern layout
       const doc = new PDFDocument({
-        size: 'A4',
-        margin: 50, // Increased margin for better spacing
+        size: "A4",
+        margin: 50,
         bufferPages: true,
-        layout: 'portrait'
-      });
+        layout: "portrait",
+      })
 
-      const buffers = [];
-      doc.on('data', buffers.push.bind(buffers));
-      doc.on('end', () => resolve(Buffer.concat(buffers)));
-      doc.on('error', reject);
+      const buffers = []
+      doc.on("data", buffers.push.bind(buffers))
+      doc.on("end", () => resolve(Buffer.concat(buffers)))
+      doc.on("error", reject)
 
       // ===== Modern Design System =====
       const design = {
         colors: {
-          primary: '#2b3d4f',       // Navy blue
-          secondary: '#e74c3c',     // Coral accent (toned down)
-          background: '#f8f9fa',    // Light gray bg
-          text: '#2c3e50',          // Dark text
-          lightText: '#7f8c8d'      // Secondary text
+          primary: "#4f46e5", // Indigo - modern and professional
+          secondary: "#3b82f6", // Blue for accents
+          accent: "#f59e0b", // Amber for highlights
+          background: "#f8fafc", // Light blue-gray bg
+          text: "#1e293b", // Slate for better readability
+          lightText: "#64748b", // Muted text
+          border: "#e2e8f0", // Subtle borders
+          success: "#10b981", // Green for skill indicators
+          white: "#ffffff", // White
         },
         fonts: {
-          header: 'Helvetica-Bold',
-          subheader: 'Helvetica-Bold',
-          body: 'Helvetica',
-          light: 'Helvetica-Oblique'
+          header: "Helvetica-Bold",
+          subheader: "Helvetica-Bold",
+          body: "Helvetica",
+          light: "Helvetica-Oblique",
         },
         spacing: {
-          section: 30,
-          subsection: 20,
+          section: 25, // Consistent section spacing
           item: 15,
-          paragraph: 10 // Increased paragraph spacing
+          paragraph: 10,
+          skillBar: 30, // Increased spacing for skill bars
         },
         sizes: {
-          title: 28, // Increased font sizes
-          header: 18,
-          subheader: 16,
-          body: 12,
-          small: 10
-        }
-      };
+          title: 26,
+          header: 16,
+          subheader: 13,
+          body: 11,
+          small: 9,
+        },
+      }
 
-      // ===== Modern Header with Proper Spacing =====
-      doc.rect(0, 0, doc.page.width, 140) // Taller header
-         .fill(design.colors.primary);
+      // ===== Modern Header =====
+      doc.rect(0, 0, doc.page.width, 120).fill(design.colors.primary)
 
-      // Name and Title with better spacing
-      doc.font(design.fonts.header)
-         .fontSize(design.sizes.title)
-         .fillColor('#ffffff')
-         .text(resumeData.fullName.toUpperCase(), 60, 60, {
-           lineGap: 5
-         });
+      // Name and Title with better vertical rhythm
+      doc
+        .font(design.fonts.header)
+        .fontSize(design.sizes.title)
+        .fillColor(design.colors.white)
+        .text(resumeData.fullName.toUpperCase(), 60, 45, {
+          lineGap: 5,
+        })
 
-      // Contact Info with better layout
-      const contactY = 110;
-      const contactItems = [
-        { text: resumeData.email, icon: '✉' },
-        { text: resumeData.phone, icon: '📱' },
-        { text: resumeData.linkedIn, icon: '🔗' }
-      ].filter(item => item.text);
+      if (resumeData.title) {
+        doc
+          .font(design.fonts.light)
+          .fontSize(design.sizes.subheader)
+          .fillColor("rgba(255,255,255,0.9)")
+          .text(resumeData.title, 60, 75)
+      }
 
-      // Center contact items
-      const contactWidth = 500;
-      const contactStartX = (doc.page.width - contactWidth) / 2;
-      
-      contactItems.forEach((item, i) => {
-        doc.font(design.fonts.body)
-           .fontSize(design.sizes.body) // Larger font
-           .fillColor('#ffffff')
-           .text(`${item.icon} ${item.text}`, 
-                 contactStartX + (i * 180), contactY, {
-                   width: 180,
-                   lineGap: 5
-                 });
-      });
+      // Contact Info with modern icons in a clean layout
+      const contactY = 100
+      const contactItems = []
 
-      // Profile Photo with proper spacing
+      // Only add items that actually exist and are not empty
+      if (resumeData.email && resumeData.email.trim()) {
+        contactItems.push({ text: resumeData.email.trim(), icon: "✉" })
+      }
+
+      if (resumeData.phone && resumeData.phone.trim()) {
+        contactItems.push({ text: resumeData.phone.trim(), icon: "📱" })
+      }
+
+      if (resumeData.linkedIn && resumeData.linkedIn.trim()) {
+        contactItems.push({ text: resumeData.linkedIn.trim(), icon: "🔗" })
+      }
+
+      if (resumeData.website && resumeData.website.trim()) {
+        contactItems.push({ text: resumeData.website.trim(), icon: "🌐" })
+      }
+
+      // Dynamic contact info spacing
+      if (contactItems.length > 0) {
+        const contactWidth = doc.page.width - 120
+        const itemWidth = contactWidth / contactItems.length
+
+        contactItems.forEach((item, i) => {
+          doc
+            .font(design.fonts.body)
+            .fontSize(design.sizes.body)
+            .fillColor(design.colors.white)
+            .text(`${item.icon} ${item.text}`, 60 + i * itemWidth, contactY, {
+              width: itemWidth,
+              lineGap: 5,
+              align: "left",
+            })
+        })
+      }
+
+      // Profile Photo with improved styling
       if (resumeData.photoUrl) {
         try {
+          // Use axios to fetch the image
           const response = await axios.get(resumeData.photoUrl, {
-            responseType: 'arraybuffer'
-          });
-          
-          // Position photo with proper margins
-          const x = doc.page.width - 80;
-          const y = 60; // Proper top margin
-          const radius = 35; // Slightly smaller for better balance
-          
-          doc.save()
-             .circle(x, y, radius)
-             .clip();
-          
+            responseType: "arraybuffer",
+          })
+
+          const x = doc.page.width - 85
+          const y = 60
+          const radius = 35
+
+          // White circular background
+          doc.circle(x, y, radius + 3).fill(design.colors.white)
+
+          // Clip for circular image
+          doc.save().circle(x, y, radius).clip()
+
+          // Draw the image
           doc.image(response.data, x - radius, y - radius, {
             width: radius * 2,
             height: radius * 2,
-            align: 'center',
-            valign: 'center'
-          });
-          
-          doc.restore();
-          
-          // Add subtle border to circle
-          doc.circle(x, y, radius)
-             .stroke('#ffffff')
-             .lineWidth(1.5);
+            align: "center",
+            valign: "center",
+          })
+
+          doc.restore()
+
+          // Add subtle shadow effect
+          doc.circle(x, y, radius).strokeColor("rgba(0,0,0,0.2)").lineWidth(1).stroke()
         } catch (error) {
-          console.error('Error loading profile photo:', error);
+          console.error("Error loading profile photo:", error)
+          // Continue without the photo if there's an error
         }
       }
 
-      // ===== Content Area with Better Spacing =====
-      let y = 170; // Start below header with more space
+      // ===== Content Area with Consistent Spacing =====
+      let y = 150 // Start below header
 
-      // ===== Summary Section =====
+      // ===== Summary Section with Card-like Design =====
       if (resumeData.summary) {
-        addModernSectionHeader(doc, 'PROFILE', y, design);
-        y += design.spacing.section + 10;
-        
-        doc.font(design.fonts.body)
-           .fontSize(design.sizes.body)
-           .fillColor(design.colors.text)
-           .text(resumeData.summary, 60, y, {
-             width: doc.page.width - 120,
-             lineGap: design.spacing.paragraph,
-             align: 'left'
-           });
-        
-        y += doc.heightOfString(resumeData.summary, {
-          width: doc.page.width - 120
-        }) + design.spacing.section + 10;
+        // Card background
+        const summaryHeight =
+          doc.heightOfString(resumeData.summary, {
+            width: doc.page.width - 120,
+            lineGap: design.spacing.paragraph,
+          }) + 30
+
+        doc
+          .roundedRect(50, y - 10, doc.page.width - 100, summaryHeight, 8)
+          .fillColor(design.colors.background)
+          .fill()
+
+        addModernSectionHeader(doc, "PROFILE", y, design)
+        y += 20
+
+        doc
+          .font(design.fonts.body)
+          .fontSize(design.sizes.body)
+          .fillColor(design.colors.text)
+          .text(resumeData.summary, 60, y, {
+            width: doc.page.width - 120,
+            lineGap: design.spacing.paragraph,
+            align: "left",
+          })
+
+        y += summaryHeight + design.spacing.section
       }
 
-      // ===== Work Experience =====
+      // ===== Work Experience with Timeline Design =====
       if (resumeData.workExperiences?.length > 0) {
-        addModernSectionHeader(doc, 'EXPERIENCE', y, design);
-        y += design.spacing.section + 10;
+        addModernSectionHeader(doc, "EXPERIENCE", y, design)
+        y += 20
 
-        resumeData.workExperiences.forEach((exp, i) => {
-          // Check page break with more buffer space
-          if (y > doc.page.height - 220) {
-            doc.addPage();
-            y = 80;
-          }
+        // Timeline line
+        const startY = y
+        let endY = y
 
-          // Position and Company with better hierarchy
-          doc.font(design.fonts.subheader)
-             .fontSize(design.sizes.subheader)
-             .fillColor(design.colors.primary)
-             .text(exp.position, 60, y);
-          
-          doc.font(design.fonts.body)
-             .fontSize(design.sizes.body)
-             .fillColor(design.colors.secondary)
-             .text(exp.company, 60, y + 22);
-          
-          // Dates with better alignment
-          const dates = `${exp.startDate} - ${exp.current ? 'Present' : exp.endDate}`;
-          doc.font(design.fonts.light)
-             .fontSize(design.sizes.small)
-             .fillColor(design.colors.lightText)
-             .text(dates, doc.page.width - 160, y, {
-               width: 100,
-               align: 'right'
-             });
-          
-          y += 45;
+        // COMPLETELY REVISED EXPERIENCE SECTION TO FIX OVERLAPPING TEXT
+        for (let i = 0; i < resumeData.workExperiences.length; i++) {
+          const exp = resumeData.workExperiences[i]
 
-          // Description with elegant bullet points and better spacing
+          // Calculate the height needed for this experience entry
+          let descriptionHeight = 0
           if (exp.description) {
-            const bullets = exp.description.split('\n').filter(p => p.trim());
-            bullets.forEach(bullet => {
-              doc.font(design.fonts.body)
-                 .fontSize(design.sizes.body)
-                 .fillColor(design.colors.secondary) // Subtle bullet color
-                 .text('•', 60, y);
-              
-              doc.fillColor(design.colors.text)
-                 .text(bullet.trim(), 75, y, {
-                   width: doc.page.width - 135,
-                   lineGap: design.spacing.paragraph
-                 });
-              
-              y += doc.heightOfString(bullet.trim(), {
-                width: doc.page.width - 135
-              }) + 12;
-            });
+            const bullets = exp.description.split("\n").filter((p) => p.trim())
+            bullets.forEach((bullet) => {
+              descriptionHeight +=
+                doc.heightOfString(bullet.trim(), {
+                  width: doc.page.width - 165,
+                  lineGap: design.spacing.paragraph,
+                }) + 8
+            })
           }
 
-          // Add subtle separator only if more items follow
+          // Total height needed for this experience entry
+          const entryHeight = 60 + descriptionHeight + 15 // Header + description + padding
+
+          // Check if we need a page break
+          if (y + entryHeight > doc.page.height - 100) {
+            // Draw timeline on current page before breaking
+            if (i > 0) {
+              // Only draw if we've already added some experiences
+              doc.strokeColor(design.colors.secondary).lineWidth(2).moveTo(70, startY).lineTo(70, endY).stroke()
+            }
+
+            doc.addPage()
+            y = 60
+
+            // Reset timeline for new page
+            const newStartY = y
+            endY = newStartY
+
+            // If this is the first experience on a new page, add the EXPERIENCE header again
+            if (i === 0) {
+              addModernSectionHeader(doc, "EXPERIENCE", y, design)
+              y += 20
+            }
+          }
+
+          // Timeline dot
+          doc
+            .circle(70, y + 10, 5)
+            .fillColor(design.colors.accent)
+            .fill()
+
+          // Position and Company with better spacing
+          doc
+            .font(design.fonts.subheader)
+            .fontSize(design.sizes.subheader)
+            .fillColor(design.colors.primary)
+            .text(exp.position, 90, y)
+
+          doc
+            .font(design.fonts.body)
+            .fontSize(design.sizes.body)
+            .fillColor(design.colors.secondary)
+            .text(exp.company, 90, y + 18)
+
+          // Right-aligned dates with pill design
+          const dates = `${exp.startDate} - ${exp.current ? "Present" : exp.endDate}`
+          const dateWidth = doc.widthOfString(dates) + 20
+
+          doc
+            .roundedRect(doc.page.width - 60 - dateWidth, y, dateWidth, 18, 8)
+            .fillColor(design.colors.primary)
+            .fill()
+
+          doc
+            .font(design.fonts.light)
+            .fontSize(design.sizes.small)
+            .fillColor(design.colors.white)
+            .text(dates, doc.page.width - 60 - dateWidth + 10, y + 4)
+
+          y += 35
+
+          // Description with improved bullet points
+          if (exp.description) {
+            const bullets = exp.description.split("\n").filter((p) => p.trim())
+            bullets.forEach((bullet) => {
+              // Custom bullet point
+              doc
+                .circle(95, y + 5, 2)
+                .fillColor(design.colors.accent)
+                .fill()
+
+              doc
+                .font(design.fonts.body)
+                .fontSize(design.sizes.body)
+                .fillColor(design.colors.text)
+                .text(bullet.trim(), 105, y, {
+                  width: doc.page.width - 165,
+                  lineGap: design.spacing.paragraph,
+                })
+
+              y +=
+                doc.heightOfString(bullet.trim(), {
+                  width: doc.page.width - 165,
+                  lineGap: design.spacing.paragraph,
+                }) + 8
+            })
+          }
+
+          endY = y + 5
+
+          // Add space between experiences, but only if not the last one
           if (i < resumeData.workExperiences.length - 1) {
-            y += 15;
-            doc.moveTo(60, y)
-               .lineTo(doc.page.width - 60, y)
-               .strokeColor('#e0e0e0') // Lighter separator
-               .lineWidth(0.5)
-               .stroke();
-            y += 20;
+            y += 30 // Increased spacing between experiences
           }
-        });
+        }
 
-        y += design.spacing.section;
+        // Draw timeline for the last page
+        doc.strokeColor(design.colors.secondary).lineWidth(2).moveTo(70, startY).lineTo(70, endY).stroke()
+
+        y += design.spacing.section
       }
 
-      // ===== Education ===== 
+      // ===== Education with Card Design =====
       if (resumeData.educations?.length > 0) {
-        y += 20; // Extra space before education
-        
-        addModernSectionHeader(doc, 'EDUCATION', y, design);
-        y += design.spacing.section + 10;
+        // Check if we need a page break before education section
+        // Calculate approximate height needed for education section
+        const eduSectionHeight = 30 + resumeData.educations.length * 100 // Header + entries
+
+        // If education section won't fit on current page, start a new page
+        if (y + eduSectionHeight > doc.page.height - 100) {
+          doc.addPage()
+          y = 60
+        }
+
+        addModernSectionHeader(doc, "EDUCATION", y, design)
+        y += 20
 
         resumeData.educations.forEach((edu, i) => {
-          if (y > doc.page.height - 180) {
-            doc.addPage();
-            y = 80;
+          // Check if this specific education entry needs a page break
+          const eduEntryHeight = edu.achievements ? 100 : 70
+
+          if (y + eduEntryHeight > doc.page.height - 80) {
+            doc.addPage()
+            y = 60
           }
 
-          // Degree and Field with better typography
-          doc.font(design.fonts.subheader)
-             .fontSize(design.sizes.subheader)
-             .fillColor(design.colors.primary)
-             .text(edu.degree, 60, y);
-          
+          // Card background
+          doc
+            .roundedRect(50, y - 10, doc.page.width - 100, eduEntryHeight, 8)
+            .fillColor(design.colors.background)
+            .fill()
+
+          // Left-aligned degree info
+          doc
+            .font(design.fonts.subheader)
+            .fontSize(design.sizes.subheader)
+            .fillColor(design.colors.primary)
+            .text(edu.degree, 60, y)
+
           if (edu.fieldOfStudy) {
-            doc.font(design.fonts.body)
-               .fontSize(design.sizes.body)
-               .fillColor(design.colors.lightText)
-               .text(edu.fieldOfStudy, 60, y + 22);
+            doc
+              .font(design.fonts.body)
+              .fontSize(design.sizes.body)
+              .fillColor(design.colors.lightText)
+              .text(edu.fieldOfStudy, 60, y + 18)
           }
-          
-          // Institution and Dates with better alignment
-          doc.font(design.fonts.body)
-             .fontSize(design.sizes.body)
-             .fillColor(design.colors.secondary)
-             .text(edu.institution, 200, y);
-          
-          const dates = `${edu.startDate} - ${edu.endDate || 'Present'}`;
-          doc.font(design.fonts.light)
-             .fontSize(design.sizes.small)
-             .fillColor(design.colors.lightText)
-             .text(dates, doc.page.width - 160, y, {
-               width: 100,
-               align: 'right'
-             });
-          
-          y += 45;
 
-          // Achievements with better styling
+          // Right-aligned institution and dates
+          doc
+            .font(design.fonts.body)
+            .fontSize(design.sizes.body)
+            .fillColor(design.colors.secondary)
+            .text(edu.institution, doc.page.width - 260, y, {
+              width: 200,
+              align: "right",
+            })
+
+          const dates = `${edu.startDate} - ${edu.endDate || "Present"}`
+          doc
+            .font(design.fonts.light)
+            .fontSize(design.sizes.small)
+            .fillColor(design.colors.lightText)
+            .text(dates, doc.page.width - 160, y + (edu.fieldOfStudy ? 18 : 0), {
+              width: 100,
+              align: "right",
+            })
+
+          y += edu.fieldOfStudy ? 40 : 25
+
+          // Achievements with subtle styling
           if (edu.achievements) {
-            doc.font(design.fonts.body)
-               .fontSize(design.sizes.small)
-               .fillColor(design.colors.text)
-               .text(`Notable: ${edu.achievements}`, 60, y, {
-                 width: doc.page.width - 120,
-                 lineGap: 6
-               });
-            
-            y += doc.heightOfString(edu.achievements, {
-              width: doc.page.width - 120
-            }) + 25;
+            doc
+              .font(design.fonts.body)
+              .fontSize(design.sizes.small)
+              .fillColor(design.colors.text)
+              .text(`Notable: ${edu.achievements}`, 60, y, {
+                width: doc.page.width - 120,
+                lineGap: 5,
+              })
+
+            y +=
+              doc.heightOfString(edu.achievements, {
+                width: doc.page.width - 120,
+              }) + 8
           }
-        });
+
+          y += 15
+        })
+
+        y += design.spacing.section
       }
 
-      // ===== Skills ===== (modern two-column layout)
+      // ===== Skills with Visual Progress Bars =====
       if (resumeData.skills?.length > 0) {
-        addModernSectionHeader(doc, 'SKILLS', y, design);
-        y += design.spacing.section + 10;
-        
+        // Check if we need a page break before skills section
+        // Calculate approximate height needed for skills section
+        const skillSectionHeight = 30 + resumeData.skills.length * design.spacing.skillBar // Header + rows
+
+        // If skills section won't fit on current page, start a new page
+        if (y + skillSectionHeight > doc.page.height - 80) {
+          doc.addPage()
+          y = 60
+        }
+
+        addModernSectionHeader(doc, "SKILLS", y, design)
+        y += 20
+
         // Clean and format skills
-        const cleanSkills = resumeData.skills.map(skill => 
-          skill.replace(/[\[\]"]/g, '').trim()
-        ).filter(skill => skill);
-        
-        // Two column layout with better spacing
-        const columnWidth = (doc.page.width - 140) / 2;
-        const columnGap = 20;
-        let currentColumn = 0;
-        let currentY = y;
-        
+        let cleanSkills = []
+
+        // Handle different skill formats
+        if (Array.isArray(resumeData.skills)) {
+          // If skills is already an array
+          cleanSkills = resumeData.skills
+            .map((skill) => (typeof skill === "string" ? skill.replace(/[[\]"]/g, "").trim() : String(skill).trim()))
+            .filter((skill) => skill)
+        } else if (typeof resumeData.skills === "string") {
+          // If skills is a string (possibly JSON)
+          try {
+            const parsedSkills = JSON.parse(resumeData.skills)
+            if (Array.isArray(parsedSkills)) {
+              cleanSkills = parsedSkills
+                .map((skill) =>
+                  typeof skill === "string" ? skill.replace(/[[\]"]/g, "").trim() : String(skill).trim(),
+                )
+                .filter((skill) => skill)
+            } else {
+              // If it's a string but not a valid JSON array
+              cleanSkills = resumeData.skills
+                .split(",")
+                .map((s) => s.trim())
+                .filter((s) => s)
+            }
+          } catch (e) {
+            // If it's not valid JSON, treat as comma-separated
+            cleanSkills = resumeData.skills
+              .split(",")
+              .map((s) => s.trim())
+              .filter((s) => s)
+          }
+        }
+
+        // Single column layout with skill bars - vertical layout
+        const columnWidth = doc.page.width - 120
+        let currentY = y
+
         cleanSkills.forEach((skill, i) => {
-          if (currentY > doc.page.height - 60) {
-            doc.addPage();
-            currentY = 80;
-            currentColumn = 0;
+          // Check if we need a page break within skills section
+          if (currentY > doc.page.height - 50) {
+            doc.addPage()
+            currentY = 60
           }
-          
-          const x = 60 + (currentColumn * (columnWidth + columnGap));
-          
-          // Modern bullet point with better spacing
-          doc.font('Helvetica')
-             .fontSize(design.sizes.body + 1)
-             .fillColor(design.colors.secondary)
-             .text('•', x, currentY + 2);
-          
-          doc.font(design.fonts.body)
-             .fontSize(design.sizes.body)
-             .fillColor(design.colors.text)
-             .text(skill, x + 12, currentY, {
-               width: columnWidth - 15
-             });
-          
-          // Move to next column or row
-          if (currentColumn === 0 && i < cleanSkills.length - 1) {
-            currentColumn = 1;
-          } else {
-            currentColumn = 0;
-            currentY += 22; // Increased line height
-          }
-        });
-        
-        y = currentY + 30;
+
+          // Skill name
+          doc
+            .font(design.fonts.body)
+            .fontSize(design.sizes.body)
+            .fillColor(design.colors.text)
+            .text(skill, 60, currentY)
+
+          // Skill bar background - increased spacing
+          const barY = currentY + 20 // More space between text and bar
+          doc
+            .roundedRect(60, barY, columnWidth - 20, 6, 3)
+            .fillColor("#e5e7eb")
+            .fill()
+
+          // Skill bar fill - random level between 65-100%
+          const skillLevel = 0.65 + Math.random() * 0.35
+          doc
+            .roundedRect(60, barY, (columnWidth - 20) * skillLevel, 6, 3)
+            .fillColor(design.colors.secondary)
+            .fill()
+
+          // Move to next row with improved spacing
+          currentY += design.spacing.skillBar // Increased spacing between skill rows
+        })
+
+        y = currentY + design.spacing.section
       }
 
-      // ===== Modern Minimal Footer =====
-      const footerY = doc.page.height - 50; // More footer space
-      doc.rect(0, footerY, doc.page.width, 50)
-         .fill(design.colors.primary);
-      
-      // Simple centered footer text
-      doc.font(design.fonts.light)
-         .fontSize(design.sizes.small)
-         .fillColor('#ffffff')
-         .text('Professional Resume', 
-               doc.page.width / 2, footerY + 20, {
-                 align: 'center'
-               });
+      // ===== Modern Footer =====
+      const footerY = doc.page.height - 35
+      doc.rect(0, footerY, doc.page.width, 35).fill(design.colors.primary)
 
-      doc.end();
+      // Page number
+      const totalPages = doc.bufferedPageRange().count
+      for (let i = 0; i < totalPages; i++) {
+        doc.switchToPage(i)
+
+        // Footer text with contact info - fixed email display
+        let footerText = resumeData.fullName || ""
+
+        if (resumeData.email && resumeData.email.trim()) {
+          footerText += ` • ${resumeData.email.trim()}`
+        }
+
+        if (resumeData.phone && resumeData.phone.trim()) {
+          footerText += ` • ${resumeData.phone.trim()}`
+        }
+
+        doc
+          .font(design.fonts.light)
+          .fontSize(design.sizes.small)
+          .fillColor(design.colors.white)
+          .text(footerText, doc.page.width / 2, footerY + 12, {
+            align: "center",
+          })
+
+        // Page number
+        doc.text(`Page ${i + 1} of ${totalPages}`, doc.page.width - 80, footerY + 12, {
+          align: "right",
+        })
+      }
+
+      doc.end()
     } catch (error) {
-      console.error('PDF generation error:', error);
-      reject(error);
+      console.error("PDF generation error:", error)
+      reject(error)
     }
-  });
-};
-
-// Modern section header with subtle styling
-function addModernSectionHeader(doc, title, y, design) {
-  // Subtle left accent
-  doc.rect(50, y + 8, 4, 18)
-     .fill(design.colors.secondary);
-  
-  // Section title with better spacing
-  doc.font(design.fonts.header)
-     .fontSize(design.sizes.header)
-     .fillColor(design.colors.primary)
-     .text(title.toUpperCase(), 60, y);
-  
-  // Very subtle underline
-  doc.moveTo(60, y + 24)
-     .lineTo(60 + doc.widthOfString(title.toUpperCase()), y + 24)
-     .strokeColor('#e0e0e0') // Lighter line
-     .lineWidth(0.7)
-     .stroke();
+  })
 }
+
+// Enhanced section header with modern design
+function addModernSectionHeader(doc, title, y, design) {
+  // Modern section header with accent bar
+  doc.rect(50, y, 4, 16).fillColor(design.colors.accent).fill()
+
+  // Section title
+  doc
+    .font(design.fonts.header)
+    .fontSize(design.sizes.header)
+    .fillColor(design.colors.primary)
+    .text(title.toUpperCase(), 60, y - 4)
+
+  // Underline
+  const titleWidth = doc.widthOfString(title.toUpperCase())
+  doc
+    .rect(60, y + 14, titleWidth, 1)
+    .fillColor(design.colors.accent)
+    .fill()
+}
+
+// For testing, log a message
+console.log("PDF Generator loaded successfully!")

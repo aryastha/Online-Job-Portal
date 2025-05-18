@@ -16,20 +16,17 @@ const useGetAllJobs = () => {
       setError(null);
       try {
         const res = await axios.get(
-          `${JOB_API_ENDPOINT}/get?keyword=${searchedQuery}`,
+          `${JOB_API_ENDPOINT}/all`,
           {
             withCredentials: true,
           }
         );
-        console.log("API Response:", res.data);
-        if (res.data.status) {
-          // Updated success check
+        if (res.data.success) {
           dispatch(setAllJobs(res.data.jobs));
         } else {
           setError("Failed to fetch jobs.");
         }
       } catch (error) {
-        console.error("Fetch Error:", error);
         setError(error.message || "An error occurred.");
       } finally {
         setLoading(false);
@@ -37,7 +34,7 @@ const useGetAllJobs = () => {
     };
 
     fetchAllJobs();
-  }, [dispatch, searchedQuery]);
+  }, [dispatch]);
 
   return { loading, error };
 };
